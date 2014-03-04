@@ -8,21 +8,22 @@
 module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
 
   input [1:0] rr1,rr2,wr;
-  input wd;
+  input [15:0] wd;
   input regwrite,clock;
-  output rd1,rd2;
+  output [15:0] rd1,rd2;
 
   // registers
 
-  D_flip_flop r1 (wd,c1,q1);
-  D_flip_flop r2 (wd,c2,q2);
-  D_flip_flop r3 (wd,c3,q3);
-  D_flip_flop r4 (wd,c4,q4);
+  // Is this first one all zeros?
+  //register r0  (wd,c0,q0);
+  register r1  (wd,c1,q1);
+  register r2  (wd,c2,q2);
+  register r3  (wd,c3,q3);
 
   // output port
 
-  mux4x1 mux1 (0,q1,q2,q3,rr1,rd1),
-         mux2 (0,q1,q2,q3,rr2,rd2);
+  mux4x1_16 mux1 (16'b0,q1,q2,q3,rr1,rd1),
+            mux2 (16'b0,q1,q2,q3,rr2,rd2);
 
   // input port
 
@@ -38,6 +39,29 @@ endmodule
 
 
 // Components
+
+module register(D, CLK, Q);
+  input [15:0] D;
+  input CLK;
+  output [15:0] Q;
+
+  D_flip_flop f1   (D[0], CLK, Q[0]);
+  D_flip_flop f2   (D[1], CLK, Q[1]);
+  D_flip_flop f3   (D[2], CLK, Q[2]);
+  D_flip_flop f4   (D[3], CLK, Q[3]);
+  D_flip_flop f5   (D[4], CLK, Q[4]);
+  D_flip_flop f6   (D[5], CLK, Q[5]);
+  D_flip_flop f7   (D[6], CLK, Q[6]);
+  D_flip_flop f8   (D[7], CLK, Q[7]);
+  D_flip_flop f9   (D[8], CLK, Q[8]);
+  D_flip_flop f10  (D[9], CLK, Q[9]);
+  D_flip_flop f11  (D[10],CLK, Q[10]);
+  D_flip_flop f12  (D[11],CLK, Q[11]);
+  D_flip_flop f13  (D[12],CLK, Q[12]);
+  D_flip_flop f14  (D[13],CLK, Q[13]);
+  D_flip_flop f15  (D[14],CLK, Q[14]);
+  D_flip_flop f16  (D[15],CLK, Q[15]);
+endmodule
 
 module D_flip_flop(D,CLK,Q);
   input D,CLK; 
@@ -64,6 +88,7 @@ endmodule
 module mux2x1(A,B,select,OUT); 
   input A,B,select; 
   output OUT;
+
   not not1(i0, select);
   and and1(i1, A, i0);
   and and2(i2, B, select);
@@ -75,11 +100,34 @@ module mux4x1(i0,i1,i2,i3,select,y);
   input i0,i1,i2,i3; 
   input [1:0] select; 
   output y;
+
   mux2x1 mux1(i0, i1, select[0], m1);
   mux2x1 mux2(i2, i3, select[0], m2);
   mux2x1 mux3(m1, m2, select[1], y);
 endmodule
 
+module mux4x1_16(i0,i1,i2,i3,select,y);
+  input [15:0] i0,i1,i2,i3;
+  input [1:0] select;
+  output [15:0] y;
+
+  mux4x1 mux1 (i0[0], i1[0], i2[0], i3[0], select,y[0]);
+  mux4x1 mux2 (i0[1], i1[1], i2[1], i3[1], select,y[1]);
+  mux4x1 mux3 (i0[2], i1[2], i2[2], i3[2], select,y[2]);
+  mux4x1 mux4 (i0[3], i1[3], i2[3], i3[3], select,y[3]);
+  mux4x1 mux5 (i0[4], i1[4], i2[4], i3[4], select,y[4]);
+  mux4x1 mux6 (i0[5], i1[5], i2[5], i3[5], select,y[5]);
+  mux4x1 mux7 (i0[6], i1[6], i2[6], i3[6], select,y[6]);
+  mux4x1 mux8 (i0[7], i1[7], i2[7], i3[7], select,y[7]);
+  mux4x1 mux9 (i0[8], i1[8], i2[8], i3[8], select,y[8]);
+  mux4x1 mux10(i0[9], i1[9], i2[9], i3[9], select,y[9]);
+  mux4x1 mux11(i0[10],i1[10],i2[10],i3[10],select,y[10]);
+  mux4x1 mux12(i0[11],i1[11],i2[11],i3[11],select,y[11]);
+  mux4x1 mux13(i0[12],i1[12],i2[12],i3[12],select,y[12]);
+  mux4x1 mux14(i0[13],i1[13],i2[13],i3[13],select,y[13]);
+  mux4x1 mux15(i0[14],i1[14],i2[14],i3[14],select,y[14]);
+  mux4x1 mux16(i0[15],i1[15],i2[15],i3[15],select,y[15]);
+endmodule
 
 module decoder (S1,S0,D3,D2,D1,D0); 
   input S0,S1; 
@@ -98,9 +146,9 @@ endmodule
 module testing ();
 
   reg [1:0] rr1,rr2,wr;
-  reg wd;
+  reg [15:0] wd;
   reg regwrite, clock;
-  wire rd1,rd2;
+  wire [15:0] rd1,rd2;
 
   reg_file regs (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
 
@@ -109,7 +157,7 @@ module testing ();
 
       #10 regwrite=1; //enable writing
 
-      #10 wd=0;       // set write data
+      #10 wd=16'b0;       // set write data
 
       #10      rr1=0;rr2=0;clock=0;
       #10 wr=1;rr1=1;rr2=1;clock=1;
@@ -121,7 +169,7 @@ module testing ();
 
       #10 regwrite=0; //disable writing
 
-      #10 wd=1;       // set write data
+      #10 wd=16'b1;       // set write data
 
       #10 wr=1;rr1=1;rr2=1;clock=1;
       #10                  clock=0;
@@ -132,7 +180,7 @@ module testing ();
 
       #10 regwrite=1; //enable writing
 
-      #10 wd=1;       // set write data
+      #10 wd=16'b1;       // set write data
 
       #10 wr=1;rr1=1;rr2=1;clock=1;
       #10                  clock=0;
