@@ -11,6 +11,7 @@ module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
   input [15:0] wd;
   input regwrite,clock;
   output [15:0] rd1,rd2;
+  wire [15:0] q1,q2,q3;
 
   // registers
 
@@ -67,6 +68,7 @@ module D_flip_flop(D,CLK,Q);
   input D,CLK; 
   output Q; 
   wire CLK1, Y;
+
   not  not1 (CLK1,CLK);
   D_latch D1(D,CLK, Y),
           D2(Y,CLK1,Q);
@@ -76,7 +78,8 @@ endmodule
 module D_latch(D,C,Q);
   input D,C; 
   output Q;
-  wire x,y,D1,Q1; 
+  wire x,y,D1,Q1;
+
   nand nand1 (x,D, C), 
        nand2 (y,D1,C), 
        nand3 (Q,x,Q1),
