@@ -11,12 +11,11 @@ module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
   input [15:0] wd;
   input regwrite,clock;
   output [15:0] rd1,rd2;
-  wire [15:0] q1,q2,q3;
+  wire [15:0] q0,q1,q2,q3;
 
   // registers
 
-  // Is this first one all zeros?
-  //register r0  (wd,c0,q0);
+  register r0  (16'b0,c0,q0); //register $0
   register r1  (wd,c1,q1);
   register r2  (wd,c2,q2);
   register r3  (wd,c3,q3);

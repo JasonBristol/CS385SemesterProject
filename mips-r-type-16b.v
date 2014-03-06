@@ -6,12 +6,11 @@ module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
   input [15:0] wd;
   input regwrite,clock;
   output [15:0] rd1,rd2;
-  wire [15:0] q1,q2,q3;
+  wire [15:0] q0,q1,q2,q3;
 
   // registers
 
-  // Is this first one all zeros?
-  //register r0  (16'b0,c0,q0);
+  register r0  (16'b0,c0,q0); //register $0
   register r1  (wd,c1,q1);
   register r2  (wd,c2,q2);
   register r3  (wd,c3,q3);
@@ -32,8 +31,6 @@ module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
       a3 (c3,regwrite_and_clock,w3);
 
 endmodule
-
-// Components
 
 module register(D, CLK, Q);
   input [15:0] D;
@@ -67,7 +64,6 @@ module D_flip_flop(D,CLK,Q);
   D_latch D1(D,CLK, Y),
           D2(Y,CLK1,Q);
 endmodule 
-
 
 module D_latch(D,C,Q);
   input D,C; 
@@ -270,7 +266,7 @@ module CPU (clock,ALUOut,IR);
   wire [2:0] ALUctl;
   wire [1:0] ALUOp;
 
-// Test Program:
+  // Test Program:
   initial begin 
     IMemory[0] = 32'h00004024;  // and $8, $0, $0
     IMemory[1] = 32'h00084825;  // or  $9, $0, $8 
