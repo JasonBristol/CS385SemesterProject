@@ -38,7 +38,6 @@ module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
 
 endmodule
 
-
 // Components
 
 module register(D, CLK, Q);
@@ -144,7 +143,6 @@ module decoder (S1,S0,D3,D2,D1,D0);
       a2 (D2,   S1,notS0), 
       a3 (D3,   S1,   S0); 
 endmodule 
-
 
 module testing ();
 
