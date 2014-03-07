@@ -269,13 +269,14 @@ module CPU (clock,ALUOut,IR);
 
 // Test Program:
   initial begin 
-    IMemory[0] = 32'h2009000f;  // addi $t1, $0,  15   ($t1=15)
-    IMemory[1] = 32'h200a0007;  // addi $t2, $0,  7    ($t2= 7)
-    IMemory[2] = 32'h012a5824;  // and  $t3, $t1, $t2  ($t3= 7)
-    IMemory[3] = 32'h012b5022;  // sub  $t2, $t1, $t3  ($t2= 8)
-    IMemory[4] = 32'h014b5025;  // or   $t2, $t2, $t3  ($t2=15)
-    IMemory[5] = 32'h016a482a;  // slt  $t1, $t3, $t2  ($t1= 1)
-    IMemory[6] = 32'h014b482a;  // slt  $t1, $t2, $t3  ($t1= 0)
+    IMemory[0] = 16'b0100000100011111; // addi $t1, $0, 15   # $t1 = 15
+    IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
+    IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
+    IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
+    IMemory[4] = 16'b0011101110000000; // or   $t2, $t2, $t3 # $t2 = 15
+    IMemory[5] = 16'b0000101111000000; // add  $t3, $t2, $t3 # $t3 = 22
+    IMemory[6] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
+    IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
   end
 
   initial PC = 0;
