@@ -268,11 +268,14 @@ module CPU (clock,ALUOut,IR);
 
   // Test Program:
   initial begin 
-    IMemory[0] = 32'h00004024;  // and $8, $0, $0
-    IMemory[1] = 32'h00084825;  // or  $9, $0, $8 
-    IMemory[2] = 32'h00095020;  // add $10, $0, $9 
-    IMemory[3] = 32'h000a5822;  // sub $11, $0, $10 
-    IMemory[4] = 32'h000a582a;  // slt $11, $0, $10
+    IMemory[0] = 16'b0100000100011111 // addi $t1, $0, 15   # $t1 = 15
+    IMemory[1] = 16'b0100001000000111 // addi $t2, $0, 7    # $t2 = 7
+    IMemory[2] = 16'b0010011011000000 // and  $t3, $t1, $t2 # $t3 = 7
+    IMemory[3] = 16'b0001011110000000 // sub  $t2, $t1, $t3 # $t2 = 8
+    IMemory[4] = 16'b0011101110000000 // or   $t2, $t2, $t3 # $t2 = 15
+    IMemory[5] = 16'b0000101111000000 // add  $t3, $t2, $t3 # $t3 = 22
+    IMemory[6] = 16'b0111111001000000 // slt  $t1, $t3, $t2 # $t1 = 0
+    IMemory[7] = 16'b0111101101000000 // slt  $t1, $t2, $t3 # $t1 = 1
   end
 
   initial PC = 0;
@@ -309,7 +312,7 @@ module test ();
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %h %h", $time,clock,IR,WD);
+    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
     clock = 1;
     #10 $finish;
   end
