@@ -116,7 +116,7 @@ endmodule
 module ALU (op,a,b,result,zero);
   input [15:0] a;
   input [15:0] b;
-  input [2:0] op;
+  input [3:0] op;
   output [15:0] result;
   output zero;
   wire c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16;
@@ -237,35 +237,35 @@ module MainControl (Op,Control);
 
 endmodule
 
-module ALUControl (ALUOp,FuncCode,ALUCtl); 
-  input [1:0] ALUOp;
-  input [5:0] FuncCode;
-  output reg [2:0] ALUCtl;
+// module ALUControl (ALUOp,FuncCode,ALUCtl); 
+//   input [1:0] ALUOp;
+//   input [5:0] FuncCode;
+//   output reg [2:0] ALUCtl;
 
-  always @(ALUOp,FuncCode) case (ALUOp)
-    2'b00: ALUCtl <= 3'b010; // add
-    2'b01: ALUCtl <= 3'b110; // subtract
-    2'b10: case (FuncCode)
-	     32: ALUCtl <= 3'b010; // add
-	     34: ALUCtl <= 3'b110; // sub
-	     36: ALUCtl <= 3'b000; // and
-	     37: ALUCtl <= 3'b001; // or
-	     42: ALUCtl <= 3'b111; // slt
-	default: ALUCtl <= 15; 
-    endcase
-  endcase
-endmodule
+//   always @(ALUOp,FuncCode) case (ALUOp)
+//     2'b00: ALUCtl <= 3'b010; // add
+//     2'b01: ALUCtl <= 3'b110; // subtract
+//     2'b10: case (FuncCode)
+// 	     32: ALUCtl <= 3'b010; // add
+// 	     34: ALUCtl <= 3'b110; // sub
+// 	     36: ALUCtl <= 3'b000; // and
+// 	     37: ALUCtl <= 3'b001; // or
+// 	     42: ALUCtl <= 3'b111; // slt
+// 	default: ALUCtl <= 15; 
+//     endcase
+//   endcase
+// endmodule
 
 module CPU (clock,ALUOut,IR);
 
   input clock;
-  output [31:0] ALUOut,IR;
-  reg[31:0] PC;
-  reg[31:0] IMemory[0:1023];
-  wire [31:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend;
-  wire [2:0] ALUctl;
+  output [15:0] ALUOut,IR;
+  reg[15:0] PC;
+  reg[15:0] IMemory[0:1023];
+  wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend;
+  // wire [2:0] ALUctl;
   wire [1:0] ALUOp;
-  wire [4:0] WR; 
+  wire [1:0] WR; 
 
 // Test Program:
   initial begin 
@@ -283,21 +283,22 @@ module CPU (clock,ALUOut,IR);
 
   assign IR = IMemory[PC>>2];
 
-  assign WR = (RegDst) ? IR[15:11]: IR[20:16]; // RegDst Mux
+  assign WR = (RegDst) ? IR[7:6]: IR[9:8]; // RegDst Mux
 
   assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux 
 
   assign SignExtend = {{16{IR[15]}},IR[15:0]}; // sign extension unit
 
-  reg_file rf (IR[25:21],IR[20:16],WR,ALUOut,RegWrite,A,RD2,clock);
+  reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
 
-  alu fetch (3'b010,PC,4,NextPC,Unused);
+  ALU fetch (3'b010,PC,4,NextPC,Unused);
 
-  alu ex (ALUctl, A, B, ALUOut, Zero);
+  // alu ex (ALUctl, A, B, ALUOut, Zero);
+  ALU ex (IR[15:12], A, B, ALUOut, Zero);
 
   MainControl MainCtr (IR[31:26],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
 
-  ALUControl ALUCtrl(ALUOp, IR[5:0], ALUctl); // ALU control unit
+  // ALUControl ALUCtrl(ALUOp, IR[5:0], ALUctl); // ALU control unit
 
   always @(negedge clock) begin 
     PC <= NextPC;
@@ -311,7 +312,7 @@ endmodule
 module test ();
 
   reg clock;
-  wire [31:0] WD,IR;
+  wire [15:0] WD,IR;
 
   CPU test_cpu(clock,WD,IR);
 
@@ -319,7 +320,7 @@ module test ();
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %h %h", $time,clock,IR,WD);
+    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
     clock = 1;
     #12 $finish;
   end
