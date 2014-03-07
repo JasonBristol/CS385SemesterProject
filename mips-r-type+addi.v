@@ -116,7 +116,7 @@ endmodule
 module ALU (op,a,b,result,zero);
   input [15:0] a;
   input [15:0] b;
-  input [3:0] op;
+  input [2:0] op;
   output [15:0] result;
   output zero;
   wire c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16;
@@ -224,37 +224,46 @@ endmodule
 
 module MainControl (Op,Control); 
 
-  input [5:0] Op;
+  input [3:0] Op;
   output reg [7:0] Control;
 
   always @(Op) case (Op)
-    6'b000000: Control <= 8'b10010010; // Rtype
-    6'b100011: Control <= 8'b01110000; // LW  (Not implemented)
-    6'b101011: Control <= 8'b01001000; // SW  (Not implemented)
-    6'b000100: Control <= 8'b00000101; // BEQ (Not implemented)
-    6'b001000: Control <= 8'b01010000; // ADDI
+    4'b0000: Control <= 8'b10010010; // add
+    4'b0001: Control <= 8'b10010010; // sub
+    4'b0010: Control <= 8'b10010010; // and
+    4'b0011: Control <= 8'b10010010; // or
+    4'b0111: Control <= 8'b10010010; // slt
+    4'b0101: Control <= 8'b01110000; // LW  (Not implemented)
+    4'b0110: Control <= 8'b01001000; // SW  (Not implemented)
+    4'b1000: Control <= 8'b00000101; // BEQ (Not implemented)
+    4'b0100: Control <= 8'b01010000; // ADDI
   endcase
 
 endmodule
 
-// module ALUControl (ALUOp,FuncCode,ALUCtl); 
-//   input [1:0] ALUOp;
-//   input [5:0] FuncCode;
-//   output reg [2:0] ALUCtl;
+module ALUControl (ALUOp,FuncCode,ALUCtl); 
+  input [1:0] ALUOp;
+  input [2:0] FuncCode;
+  output reg [2:0] ALUCtl;
 
-//   always @(ALUOp,FuncCode) case (ALUOp)
-//     2'b00: ALUCtl <= 3'b010; // add
-//     2'b01: ALUCtl <= 3'b110; // subtract
-//     2'b10: case (FuncCode)
-// 	     32: ALUCtl <= 3'b010; // add
-// 	     34: ALUCtl <= 3'b110; // sub
-// 	     36: ALUCtl <= 3'b000; // and
-// 	     37: ALUCtl <= 3'b001; // or
-// 	     42: ALUCtl <= 3'b111; // slt
-// 	default: ALUCtl <= 15; 
-//     endcase
-//   endcase
-// endmodule
+  always @(ALUOp,FuncCode) case (ALUOp)
+    2'b00: ALUCtl <= 3'b010; // add
+    2'b01: ALUCtl <= 3'b110; // subtract
+    2'b10: case (FuncCode)
+	     // 32: ALUCtl <= 3'b010; // add
+	     // 34: ALUCtl <= 3'b110; // sub
+	     // 36: ALUCtl <= 3'b000; // and
+	     // 37: ALUCtl <= 3'b001; // or
+	     // 42: ALUCtl <= 3'b111; // slt
+       3'b000: ALUCtl <= 3'b010; //add
+       3'b001: ALUCtl <= 3'b110; // sub
+       3'b010: ALUCtl <= 3'b000; // and
+       3'b011: ALUCtl <= 3'b001; // or
+       3'b111: ALUCtl <= 3'b111; // slt
+	default: ALUCtl <= 15; 
+    endcase
+  endcase
+endmodule
 
 module CPU (clock,ALUOut,IR);
 
@@ -263,13 +272,13 @@ module CPU (clock,ALUOut,IR);
   reg[15:0] PC;
   reg[15:0] IMemory[0:1023];
   wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend;
-  // wire [2:0] ALUctl;
+  wire [2:0] ALUctl;
   wire [1:0] ALUOp;
   wire [1:0] WR; 
 
 // Test Program:
   initial begin 
-    IMemory[0] = 16'b0100000100011111; // addi $t1, $0, 15   # $t1 = 15
+    IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
     IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
     IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
     IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
@@ -287,18 +296,18 @@ module CPU (clock,ALUOut,IR);
 
   assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux 
 
-  assign SignExtend = {{16{IR[15]}},IR[15:0]}; // sign extension unit
+  assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
 
   ALU fetch (3'b010,PC,4,NextPC,Unused);
 
-  // alu ex (ALUctl, A, B, ALUOut, Zero);
-  ALU ex (IR[15:12], A, B, ALUOut, Zero);
+  ALU ex (ALUctl, A, B, ALUOut, Zero);
+  // ALU ex (ALUOp, A, B, ALUOut, Zero);
 
-  MainControl MainCtr (IR[31:26],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
+  MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
 
-  // ALUControl ALUCtrl(ALUOp, IR[5:0], ALUctl); // ALU control unit
+  ALUControl ALUCtrl(ALUOp, IR[14:12], ALUctl); // ALU control unit
 
   always @(negedge clock) begin 
     PC <= NextPC;
@@ -322,7 +331,7 @@ module test ();
     $display ("time clock IR       WD");
     $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
     clock = 1;
-    #12 $finish;
+    #14 $finish;
   end
 
 endmodule
