@@ -1,4 +1,4 @@
-// Behavioral model of MIPS - single cycle implementation, R-types and addi
+// Gate Level model of MIPS - single cycle implementation, R-types and addi
 
 module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
 
@@ -211,7 +211,6 @@ module mux2x1(A,B,select,OUT);
   or or1(OUT, i1, i2);
 endmodule 
 
-
 module mux4x1(i0,i1,i2,i3,select,y); 
   input i0,i1,i2,i3; 
   input [1:0] select; 
@@ -294,7 +293,7 @@ module CPU (clock,ALUOut,IR);
 
   assign WR = (RegDst) ? IR[7:6]: IR[9:8]; // RegDst Mux
 
-  assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux 
+  assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux
 
   assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
@@ -329,7 +328,7 @@ module test ();
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
+    $monitor ("%2d   %b     %h  %d", $time,clock,IR,WD);
     clock = 1;
     #14 $finish;
   end
