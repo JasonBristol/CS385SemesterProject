@@ -338,7 +338,17 @@ module CPU (clock,WD,IR);
   wire [1:0] ALUOp;
 
 // Test Program:
-  initial begin 
+  initial begin
+    // Instructions need to be translated to match
+    // IMemory[0] = 32'h8c080000;  // lw $8, 0($0)
+    // IMemory[1] = 32'h8c090004;  // lw $9, 4($0)
+    // IMemory[2] = 32'h0109502a;  // slt $10, $8, $9
+    // IMemory[3] = 32'h11400002;  // beq $10, $0, 8
+    // IMemory[4] = 32'hac080004;  // sw $8, 4($0)
+    // IMemory[5] = 32'hac090000;  // sw $9, 0($0)
+    // IMemory[6] = 32'h8c0b0000;  // lw $11, 0($0)
+    // IMemory[7] = 32'h8c0c0004;  // lw $12, 4($0)
+    // IMemory[8] = 32'h016c5822;  // sub $11, $11, $12
     IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
     IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
     IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
@@ -349,8 +359,8 @@ module CPU (clock,WD,IR);
     IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
 
     // Data
-    DMemory [0] = 32'h5; // switch the cells and see how the simulation output changes
-    DMemory [1] = 32'h7;
+    DMemory [0] = 16'h5; // switch the cells and see how the simulation output changes
+    DMemory [1] = 16'h7;
   end
 
   initial PC = 0;
