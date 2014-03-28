@@ -100,6 +100,29 @@ module mux4x1_16(i0,i1,i2,i3,select,y);
   mux4x1 mux16(i0[15],i1[15],i2[15],i3[15],select,y[15]);
 endmodule
 
+module mux2x1_16(i0,i1,select,y);
+  input [15:0] i0,i1,i2,i3;
+  input select;
+  output [15:0] y;
+
+  mux2x1 mux1 (i0[0], i1[0], select,y[0]);
+  mux2x1 mux2 (i0[1], i1[1], select,y[1]);
+  mux2x1 mux3 (i0[2], i1[2], select,y[2]);
+  mux2x1 mux4 (i0[3], i1[3], select,y[3]);
+  mux2x1 mux5 (i0[4], i1[4], select,y[4]);
+  mux2x1 mux6 (i0[5], i1[5], select,y[5]);
+  mux2x1 mux7 (i0[6], i1[6], select,y[6]);
+  mux2x1 mux8 (i0[7], i1[7], select,y[7]);
+  mux2x1 mux9 (i0[8], i1[8], select,y[8]);
+  mux2x1 mux10(i0[9], i1[9], select,y[9]);
+  mux2x1 mux11(i0[10],i1[10], select,y[10]);
+  mux2x1 mux12(i0[11],i1[11], select,y[11]);
+  mux2x1 mux13(i0[12],i1[12], select,y[12]);
+  mux2x1 mux14(i0[13],i1[13], select,y[13]);
+  mux2x1 mux15(i0[14],i1[14], select,y[14]);
+  mux2x1 mux16(i0[15],i1[15], select,y[15]);
+endmodule
+
 module mux2x1_2(i0,i1,select,y);
   input [1:0] i0,i1;
   input select;
@@ -303,7 +326,8 @@ module CPU (clock,ALUOut,IR);
   // assign WR = (RegDst) ? IR[7:6]: IR[9:8]; // RegDst Mux
   mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
 
-  assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux
+  //assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux
+  mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
 
   assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
