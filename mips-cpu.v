@@ -267,7 +267,7 @@ module MainControl (Op,Control);
     4'b0101: Control <= 9'b011100000; // LW  (Not implemented) ??
     4'b0110: Control <= 9'b010010000; // SW  (Not implemented) ??
     4'b1000: Control <= 9'b000001010; // BEQ (Not implemented) ?? 
-    4'b0100: Control <= 9'b010100010; // ADDI  ??
+    4'b0100: Control <= 9'b010100010; // ADDI  
   endcase
 
 endmodule
