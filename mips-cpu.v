@@ -304,7 +304,7 @@ module CPU (clock,ALUOut,IR);
   reg[15:0] IMemory[0:1023];
   wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend;
   wire [2:0] ALUctl;
-  wire [1:0] ALUOp;
+  wire [2:0] ALUOp;
   wire [1:0] WR; 
 
 // Test Program:
