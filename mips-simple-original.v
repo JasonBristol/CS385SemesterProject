@@ -105,12 +105,16 @@ module CPU (clock,WD,IR);
 
   assign IR = IMemory[PC>>2];
   assign SignExtend = {{16{IR[15]}},IR[15:0]}; // sign extension
+
   reg_file rf (IR[25:21],IR[20:16],WR,WD,RegWrite,A,RD2,clock);
+
   alu fetch (3'b010,PC,4,PCplus4,Unused1);
   alu ex (ALUctl, A, B, ALUOut, Zero);
   alu branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
+
   MainControl MainCtr (IR[31:26],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
   ALUControl ALUCtrl(ALUOp, IR[5:0], ALUctl); // ALU control unit
+  
   assign WR = (RegDst) ? IR[15:11]: IR[20:16]; // RegDst Mux
   assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut; // MemtoReg Mux
   assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux 

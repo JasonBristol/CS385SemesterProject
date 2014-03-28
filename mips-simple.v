@@ -274,10 +274,10 @@ module MainControl (Op,Control);
 endmodule
 
 
-module CPU (clock,WD,IR);
+module CPU (clock,WD,IR,PCplus4,ALUOut,Target);
 
   input clock;
-  output [15:0] WD,IR;
+  output [15:0] WD,IR,ALUOut,PCplus4,Target;
   reg[15:0] PC,IMemory[0:1023],DMemory[0:1023];
   wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend,PCplus4,Target;
   wire [1:0] WR;
@@ -322,7 +322,7 @@ module CPU (clock,WD,IR);
 
   ALU fetch (3'b010,PC,2,PCplus4,Unused1); //changed NextPC to PCPlus4
   ALU ex (ALUOp, A, B, ALUOut, Zero);
-  ALU branch (3'b010,SignExtend<<1,PCplus4,Target,Unused2);
+  ALU branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp});
   
@@ -354,15 +354,15 @@ endmodule
 module test ();
 
   reg clock;
-  wire [15:0] WD,IR;
+  wire [15:0] WD,IR,PCplus4,ALUOut,Target;
 
-  CPU test_cpu(clock,WD,IR);
+  CPU test_cpu(clock,WD,IR,PCplus4,ALUOut,Target);
 
   always #1 clock = ~clock;
   
   initial begin
-    $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
+    $display ("time clock IR       WD  PCplus4 ALUOut Target");
+    $monitor ("%2d   %b     %b %d  %d %d %d", $time,clock,IR,WD,PCplus4,ALUOut,Target);
     clock = 1;
     #18 $finish;
   end
