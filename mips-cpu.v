@@ -300,7 +300,8 @@ module CPU (clock,ALUOut,IR);
 
   assign IR = IMemory[PC>>2];
 
-  assign WR = (RegDst) ? IR[7:6]: IR[9:8]; // RegDst Mux
+  // assign WR = (RegDst) ? IR[7:6]: IR[9:8]; // RegDst Mux
+  mux2x1_2 RegDstMux (IR[7:6], IR[9:8], RegDst, WR);
 
   assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux
 
