@@ -350,6 +350,7 @@ module CPU (clock,WD,IR);
   wire [1:0] op,func;
   wire [2:0] ALUctl;
   wire [2:0] ALUOp;
+  wire BAZ;
 
 // Test Program:
   initial begin
@@ -391,13 +392,21 @@ module CPU (clock,WD,IR);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
   // ALUControl ALUCtrl(ALUOp, IR[14:12], ALUctl); // ALU control unit
-
+  
+  // -------------------MUX---------------------------
   // assign WR = (RegDst) ? IR[7:6]: IR[9:8];             // RegDst Mux
   mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
-  assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut; // MemtoReg Mux
+  
+  //assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut; // MemtoReg Mux
+  mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
+  
   // assign B  = (ALUSrc) ? SignExtend: RD2;              // ALUSrc Mux 
   mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
-  assign NextPC = (Branch && Zero) ? Target: PCplus4;  // Branch Mux
+  
+  //assign NextPC = (Branch && Zero) ? Target: PCplus4;  // Branch Mux
+  and branchAndZero(BAZ, Branch, Zero);
+  mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
+  // --------------------------------------------------
 
   always @(negedge clock) begin 
     PC <= NextPC;
