@@ -253,19 +253,6 @@ module mux4x1(i0,i1,i2,i3,select,y);
   mux2x1 mux3(m1, m2, select[1], y);
 endmodule
 
-// module MainControl (Op,Control); 
-
-//   input [5:0] Op;
-//   output reg [7:0] Control;
-
-//   always @(Op) case (Op)
-//     6'b000000: Control <= 8'b10010010; // Rtype
-//     6'b100011: Control <= 8'b01110000; // LW    
-//     6'b101011: Control <= 8'b01001000; // SW    
-//     6'b000100: Control <= 8'b00000101; // BEQ    
-//   endcase
-
-// endmodule
 
 module MainControl (Op,Control); 
 
@@ -286,59 +273,6 @@ module MainControl (Op,Control);
 
 endmodule
 
-
-// module CPU (clock,WD,IR);
-
-//   input clock;
-//   output [31:0] WD,IR;
-//   reg[31:0] PC, IMemory[0:1023], DMemory[0:1023];
-//   wire [31:0] IR,SignExtend,NextPC,RD2,A,B,ALUOut,PCplus4,Target;
-//   wire [4:0] WR;
-//   wire [5:0] op,func;
-//   wire [2:0] ALUctl;
-//   wire [1:0] ALUOp;
-
-//   initial begin 
-//   // Program: swap memory cells and compute absolute value
-//     IMemory[0] = 32'h8c080000;  // lw $8, 0($0)
-//     IMemory[1] = 32'h8c090004;  // lw $9, 4($0)
-//     IMemory[2] = 32'h0109502a;  // slt $10, $8, $9
-//     IMemory[3] = 32'h11400002;  // beq $10, $0, 8
-//     IMemory[4] = 32'hac080004;  // sw $8, 4($0)
-//     IMemory[5] = 32'hac090000;  // sw $9, 0($0)
-//     IMemory[6] = 32'h8c0b0000;  // lw $11, 0($0)
-//     IMemory[7] = 32'h8c0c0004;  // lw $12, 4($0)
-//     IMemory[8] = 32'h016c5822;  // sub $11, $11, $12
-
-//   // Data
-//     DMemory [0] = 32'h5; // switch the cells and see how the simulation output changes
-//     DMemory [1] = 32'h7;
-//   end
-
-//   initial PC = 0;
-
-//   assign IR = IMemory[PC>>2];
-//   assign SignExtend = {{16{IR[15]}},IR[15:0]}; // sign extension
-//
-//   reg_file rf (IR[25:21],IR[20:16],WR,WD,RegWrite,A,RD2,clock);
-//   alu fetch (3'b010,PC,4,PCplus4,Unused1);
-//   alu ex (ALUctl, A, B, ALUOut, Zero);
-//   alu branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
-//
-//   MainControl MainCtr (IR[31:26],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
-//   ALUControl ALUCtrl(ALUOp, IR[5:0], ALUctl); // ALU control unit
-//
-//   assign WR = (RegDst) ? IR[15:11]: IR[20:16]; // RegDst Mux
-//   assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut; // MemtoReg Mux
-//   assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux 
-//   assign NextPC = (Branch && Zero) ? Target: PCplus4; // Branch Mux
-
-//   always @(negedge clock) begin 
-//     PC <= NextPC;
-//     if (MemWrite) DMemory[ALUOut>>2] <= RD2;
-//   end
-
-// endmodule
 
 module CPU (clock,WD,IR);
 
@@ -385,28 +319,27 @@ module CPU (clock,WD,IR);
   assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
+
   ALU fetch (3'b010,PC,4,NextPC,Unused1);
-  // ALU ex (ALUctl, A, B, ALUOut, Zero);
   ALU ex (ALUOp, A, B, ALUOut, Zero);
   ALU branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
 
-  MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
-  // ALUControl ALUCtrl(ALUOp, IR[14:12], ALUctl); // ALU control unit
+  MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp});
   
-  // -------------------MUX---------------------------
-  // assign WR = (RegDst) ? IR[7:6]: IR[9:8];             // RegDst Mux
+  // -------------------MUX------------------------------------- //
+  // assign WR = (RegDst) ? IR[7:6]: IR[9:8];                    // RegDst Mux
   mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
   
-  //assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut; // MemtoReg Mux
+  //assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;         // MemtoReg Mux
   mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
   
-  // assign B  = (ALUSrc) ? SignExtend: RD2;              // ALUSrc Mux 
+  // assign B  = (ALUSrc) ? SignExtend: RD2;                     // ALUSrc Mux 
   mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
   
-  //assign NextPC = (Branch && Zero) ? Target: PCplus4;  // Branch Mux
+  //assign NextPC = (Branch && Zero) ? Target: PCplus4;          // Branch Mux
   and branchAndZero(BAZ, Branch, Zero);
   mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
-  // --------------------------------------------------
+  // ----------------------------------------------------------- //
 
   always @(negedge clock) begin 
     PC <= NextPC;
