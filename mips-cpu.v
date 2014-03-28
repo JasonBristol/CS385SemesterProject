@@ -277,14 +277,15 @@ module CPU (clock,ALUOut,IR);
 
 // Test Program:
   initial begin 
-    IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
-    IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
-    IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
-    IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
-    IMemory[4] = 16'b0011101110000000; // or   $t2, $t2, $t3 # $t2 = 15
-    IMemory[5] = 16'b0000101111000000; // add  $t3, $t2, $t3 # $t3 = 22
-    IMemory[6] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
-    IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
+    IMemory[0] = 16'b0101000100000000; // lw $1, 0($0) -- $1 = DMemory[0] - x
+    IMemory[1] = 16'b0101001000000010; // lw $2, 2($0) -- $2 = DMemory[1] - y
+    IMemory[2] = 16'b0111011011000000; // slt $3, $1, $2 -- set $3 if $1 < $2
+    IMemory[3] = 16'b1000110000001000; // beq $3, $0, 8 -- branch to IMemory[8] 
+    IMemory[4] = 16'b0110000100000010; // sw $1, 2($0) -- store x into DMemory[1]
+    IMemory[5] = 16'b0110001000000000; // sw $2, 0($0) -- store y into DMemory[0]
+    IMemory[6] = 16'b0101000100000000; // lw $1, 0($0) -- load $1 with y
+    IMemory[7] = 16'b0101001000000010; // lw $2, 2($0) -- load $2 with x
+    IMemory[8] = 16'b0001011001000000; // sub $1, $1, $2 -- reg 1 gets (y - x)
   end
 
   initial PC = 0;
