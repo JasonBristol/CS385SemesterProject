@@ -340,15 +340,16 @@ module CPU (clock,WD,IR);
 // Test Program:
   initial begin
     // Instructions need to be translated to match
-    // IMemory[0] = 32'h8c080000;  // lw $8, 0($0)
-    // IMemory[1] = 32'h8c090004;  // lw $9, 4($0)
-    // IMemory[2] = 32'h0109502a;  // slt $10, $8, $9
-    // IMemory[3] = 32'h11400002;  // beq $10, $0, 8
-    // IMemory[4] = 32'hac080004;  // sw $8, 4($0)
-    // IMemory[5] = 32'hac090000;  // sw $9, 0($0)
-    // IMemory[6] = 32'h8c0b0000;  // lw $11, 0($0)
-    // IMemory[7] = 32'h8c0c0004;  // lw $12, 4($0)
-    // IMemory[8] = 32'h016c5822;  // sub $11, $11, $12
+    // IMemory[0] = 16'b0101000100000000;  // lw $8, 0($0) -- $1 = DMemory[0] - x
+    // IMemory[1] = 16'b0101001000000010;  // lw $9, 4($0) -- $2 = DMemory[1] - y
+    // IMemory[2] = 16'b0111011011000000;  // slt $10, $8, $9 -- Set $3 on less
+    // IMemory[3] = 16'b1000110000001000;  // beq $10, $0, 8 -- branch to IMemory[8] if $3 == 0
+    // IMemory[4] = 16'b0110000100000010;  // sw $8, 4($0) -- DMemory[0] = $2
+    // IMemory[5] = 16'b0110001000000000;  // sw $9, 0($0) -- DMemory[1] = $1
+    // IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0) -- $1 = y
+    // IMemory[7] = 16'b0101001000000010;  // lw $12, 4($0) -- $2 = x
+    // IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
+    
     IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
     IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
     IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
