@@ -274,10 +274,10 @@ module MainControl (Op,Control);
 endmodule
 
 
-module CPU (clock,WD,IR,ALUOut,A,B);
+module CPU (clock,WD,IR,ALUOut,RD2);
 
   input clock;
-  output [15:0] WD,IR,ALUOut,A,B;
+  output [15:0] WD,IR,ALUOut,RD2;
   reg[15:0] PC,IMemory[0:1023],DMemory[0:1023];
   wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend,PCplus4,Target;
   wire [1:0] WR;
@@ -289,14 +289,14 @@ module CPU (clock,WD,IR,ALUOut,A,B);
 // Test Program:
   initial begin
     
-    IMemory[0] = 16'b0101000100000000;  // lw $8, 0($0) -- $1 = DMemory[0] - x
-    IMemory[1] = 16'b0101001000000100;  // lw $9, 4($0) -- $2 = DMemory[1] - y
-    IMemory[2] = 16'b0111011011000000;  // slt $10, $8, $9 -- Set $3 on less
-    IMemory[3] = 16'b1000110000001000;  // beq $10, $0, 8 -- branch to IMemory[8] if $3 == 0
-    IMemory[4] = 16'b0110000100000100;  // sw $8, 4($0) -- DMemory[0] = $2
-    IMemory[5] = 16'b0110001000000000;  // sw $9, 0($0) -- DMemory[1] = $1
-    IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0) -- $1 = y
-    IMemory[7] = 16'b0101001000000100;  // lw $12, 4($0) -- $2 = x
+    IMemory[0] = 16'b0101000100000000;  // lw $8, 0($0)      -- $1 = DMemory[0] - x
+    IMemory[1] = 16'b0101001000000100;  // lw $9, 4($0)      -- $2 = DMemory[1] - y
+    IMemory[2] = 16'b0111011011000000;  // slt $10, $8, $9   -- Set $3 on less
+    IMemory[3] = 16'b1000110000001000;  // beq $10, $0, 8    -- branch to IMemory[8] if $3 == 0
+    IMemory[4] = 16'b0110000100000100;  // sw $8, 4($0)      -- DMemory[0] = $2
+    IMemory[5] = 16'b0110001000000000;  // sw $9, 0($0)      -- DMemory[1] = $1
+    IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0)     -- $1 = y
+    IMemory[7] = 16'b0101001000000100;  // lw $12, 4($0)     -- $2 = x
     IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
     
     // IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
@@ -320,26 +320,26 @@ module CPU (clock,WD,IR,ALUOut,A,B);
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
 
-  ALU fetch (3'b010,PC,4,PCplus4,Unused1); //changed NextPC to PCPlus4
+  ALU fetch (3'b010,PC,4,PCplus4,Unused1);
   ALU ex (ALUOp, A, B, ALUOut, Zero);
   ALU branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp});
   
-  // -------------------MUX------------------------------------- //
-  assign WR = (RegDst) ? IR[7:6]: IR[9:8];                    // RegDst Mux
+  // -----------------------Mux Block----------------------------- //
+  assign WR = (RegDst) ? IR[7:6]: IR[9:8];                         // RegDst Mux
   // mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
   
-  assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;         // MemtoReg Mux
+  assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;             // MemtoReg Mux
   // mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
   
-  assign B  = (ALUSrc) ? SignExtend: RD2;                     // ALUSrc Mux 
+  assign B  = (ALUSrc) ? SignExtend: RD2;                          // ALUSrc Mux 
   // mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
   
-  assign NextPC = (Branch && Zero) ? Target: PCplus4;            // Branch Mux
+  assign NextPC = (Branch && Zero) ? Target: PCplus4;              // Branch Mux
   // and branchAndZero(BAZ, Branch, Zero);
   // mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
-  // ----------------------------------------------------------- //
+  // ------------------------------------------------------------- //
 
   always @(negedge clock) begin 
     PC <= NextPC;
@@ -354,15 +354,15 @@ endmodule
 module test ();
 
   reg clock;
-  wire [15:0] WD,IR,ALUOut,A,B;
+  wire [15:0] WD,IR,ALUOut,RD2;
 
-  CPU test_cpu(clock,WD,IR,ALUOut,A,B);
+  CPU test_cpu(clock,WD,IR,ALUOut,RD2);
 
   always #1 clock = ~clock;
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %b %d  %b %d %d", $time,clock,IR,WD,ALUOut,A,B);
+    $monitor ("%2d   %b     %b %d  %b %d", $time,clock,IR,WD,ALUOut,RD2);
     clock = 1;
     #18 $finish;
   end
@@ -372,9 +372,9 @@ endmodule
 
 /* Compiling and simulation
 
-C:\CS385\HDL>iverilog mips-simple.vl
+C:\CS385\HDL>iverilog -o cpu mips-simple.v
 
-C:\CS385\HDL>vvp a.out
+C:\CS385\HDL>vvp cpu
 
 time clock IR       WD
  0   0     8c080000 00000005
