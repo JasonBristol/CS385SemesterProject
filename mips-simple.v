@@ -267,7 +267,8 @@ module MainControl (Op,Control);
     4'b0111: Control <= 9'b100100111; // SLT
     4'b0101: Control <= 9'b011100010; // LW  <-
     4'b0110: Control <= 9'b010010010; // SW  <-
-    4'b1000: Control <= 9'b000001001; // BEQ <-
+    4'b1000: Control <= 9'b000001110; // BEQ <-
+    // 4'b1001: Control <= 9'b000000000; // BNE <-
     4'b0100: Control <= 9'b010100010; // ADDI  
   endcase
 
@@ -298,6 +299,7 @@ module CPU (clock,WD,IR);
     IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0)     -- $1 = y
     IMemory[7] = 16'b0101001000000100;  // lw $12, 4($0)     -- $2 = x
     IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
+    // IMemory[9] = 16'b1001 0000 0000 0000;  // bne
     
     // IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
     // IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
@@ -364,7 +366,7 @@ module test ();
     $display ("time clock IR       WD");
     $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
     clock = 1;
-    #17 $finish;
+    #18 $finish;
   end
 
 endmodule
