@@ -274,10 +274,10 @@ module MainControl (Op,Control);
 endmodule
 
 
-module CPU (clock,WD,IR,ALUOut,RD2);
+module CPU (clock,WD,IR);
 
   input clock;
-  output [15:0] WD,IR,ALUOut,RD2;
+  output [15:0] WD,IR;
   reg[15:0] PC,IMemory[0:1023],DMemory[0:1023];
   wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend,PCplus4,Target;
   wire [1:0] WR;
@@ -318,7 +318,7 @@ module CPU (clock,WD,IR,ALUOut,RD2);
   assign IR = IMemory[PC>>2];
   assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
-  reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
+  reg_file rf (IR[11:10],IR[9:8],WR,WD,RegWrite,A,RD2,clock);
 
   ALU fetch (3'b010,PC,4,PCplus4,Unused1);
   ALU ex (ALUOp, A, B, ALUOut, Zero);
@@ -327,18 +327,18 @@ module CPU (clock,WD,IR,ALUOut,RD2);
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp});
   
   // -----------------------Mux Block----------------------------- //
-  assign WR = (RegDst) ? IR[7:6]: IR[9:8];                         // RegDst Mux
-  // mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
+  // assign WR = (RegDst) ? IR[7:6]: IR[9:8];                      // RegDst Mux
+  mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
   
-  assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;             // MemtoReg Mux
-  // mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
+  // assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;          // MemtoReg Mux
+  mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
   
-  assign B  = (ALUSrc) ? SignExtend: RD2;                          // ALUSrc Mux 
-  // mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
+  // assign B  = (ALUSrc) ? SignExtend: RD2;                       // ALUSrc Mux 
+  mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
   
-  assign NextPC = (Branch && Zero) ? Target: PCplus4;              // Branch Mux
-  // and branchAndZero(BAZ, Branch, Zero);
-  // mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
+  // assign NextPC = (Branch && Zero) ? Target: PCplus4;           // Branch Mux
+  and branchAndZero(BAZ, Branch, Zero);
+  mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
   // ------------------------------------------------------------- //
 
   always @(negedge clock) begin 
@@ -354,17 +354,17 @@ endmodule
 module test ();
 
   reg clock;
-  wire [15:0] WD,IR,ALUOut,RD2;
+  wire [15:0] WD,IR;
 
-  CPU test_cpu(clock,WD,IR,ALUOut,RD2);
+  CPU test_cpu(clock,WD,IR);
 
   always #1 clock = ~clock;
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %b %d  %b %d", $time,clock,IR,WD,ALUOut,RD2);
+    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
     clock = 1;
-    #18 $finish;
+    #17 $finish;
   end
 
 endmodule
