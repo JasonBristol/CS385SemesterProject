@@ -103,7 +103,7 @@ endmodule
 module mux2x1_2(i0,i1,select,y);
   input [1:0] i0,i1;
   input select;
-  output [15:0] y;
+  output [1:0] y;
 
   mux2x1 mux1 (i0[0], i1[0], select,y[0]);
   mux2x1 mux2 (i0[1], i1[1], select,y[1]);
