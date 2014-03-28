@@ -320,7 +320,7 @@ module CPU (clock,WD,IR);
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
 
-  ALU fetch (3'b010,PC,2,NextPC,Unused1);
+  ALU fetch (3'b010,PC,2,PCPlus4,Unused1); //changed NextPC to PCPlus4
   ALU ex (ALUOp, A, B, ALUOut, Zero);
   ALU branch (3'b010,SignExtend<<1,PCplus4,Target,Unused2);
 
