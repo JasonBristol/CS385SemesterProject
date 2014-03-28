@@ -100,6 +100,15 @@ module mux4x1_16(i0,i1,i2,i3,select,y);
   mux4x1 mux16(i0[15],i1[15],i2[15],i3[15],select,y[15]);
 endmodule
 
+module mux2x1_2(i0,i1,select,y);
+  input [1:0] i0,i1;
+  input select;
+  output [15:0] y;
+
+  mux2x1 mux1 (i0[0], i1[0], select,y[0]);
+  mux2x1 mux2 (i0[1], i1[1], select,y[1]);
+endmodule
+
 module decoder (S1,S0,D3,D2,D1,D0); 
   input S0,S1; 
   output D0,D1,D2,D3; 
@@ -299,7 +308,7 @@ module CPU (clock,ALUOut,IR);
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
 
-  ALU fetch (3'b010,PC,4,NextPC,Unused);
+  ALU fetch (3'b010,PC,4,NextPC,Unused);  // change to 2 instead of 4
 
   ALU ex (ALUctl, A, B, ALUOut, Zero);
   // ALU ex (ALUOp, A, B, ALUOut, Zero);
