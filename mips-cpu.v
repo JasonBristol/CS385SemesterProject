@@ -256,18 +256,18 @@ endmodule
 module MainControl (Op,Control); 
 
   input [3:0] Op;
-  output reg [7:0] Control;
+  output reg [8:0] Control;
 
   always @(Op) case (Op)
-    4'b0000: Control <= 8'b10010010; // add
-    4'b0001: Control <= 8'b10010010; // sub
-    4'b0010: Control <= 8'b10010010; // and
-    4'b0011: Control <= 8'b10010010; // or
-    4'b0111: Control <= 8'b10010010; // slt
-    4'b0101: Control <= 8'b01110000; // LW  (Not implemented)
-    4'b0110: Control <= 8'b01001000; // SW  (Not implemented)
-    4'b1000: Control <= 8'b00000101; // BEQ (Not implemented)
-    4'b0100: Control <= 8'b01010000; // ADDI
+    4'b0000: Control <= 8'b100100010; // add
+    4'b0001: Control <= 8'b100100110; // sub
+    4'b0010: Control <= 8'b100100000; // and
+    4'b0011: Control <= 8'b100100001; // or
+    4'b0111: Control <= 8'b100100111; // slt
+    4'b0101: Control <= 8'b011100000; // LW  (Not implemented) ??
+    4'b0110: Control <= 8'b010010000; // SW  (Not implemented) ??
+    4'b1000: Control <= 8'b000001010; // BEQ (Not implemented) ?? 
+    4'b0100: Control <= 8'b010100010; // ADDI  ??
   endcase
 
 endmodule
