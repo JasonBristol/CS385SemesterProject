@@ -320,7 +320,7 @@ module CPU (clock,WD,IR);
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
 
-  ALU fetch (3'b010,PC,2,PCPlus4,Unused1); //changed NextPC to PCPlus4
+  ALU fetch (3'b010,PC,2,PCplus4,Unused1); //changed NextPC to PCPlus4
   ALU ex (ALUOp, A, B, ALUOut, Zero);
   ALU branch (3'b010,SignExtend<<1,PCplus4,Target,Unused2);
 
@@ -330,8 +330,8 @@ module CPU (clock,WD,IR);
   // assign WR = (RegDst) ? IR[7:6]: IR[9:8];                    // RegDst Mux
   mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
   
-  //assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;         // MemtoReg Mux
-  mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
+  assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;         // MemtoReg Mux
+  // mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
   
   // assign B  = (ALUSrc) ? SignExtend: RD2;                     // ALUSrc Mux 
   mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
@@ -362,7 +362,7 @@ module test ();
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %h %d", $time,clock,IR,WD);
+    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
     clock = 1;
     #18 $finish;
   end
