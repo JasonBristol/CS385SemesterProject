@@ -100,6 +100,38 @@ module mux4x1_16(i0,i1,i2,i3,select,y);
   mux4x1 mux16(i0[15],i1[15],i2[15],i3[15],select,y[15]);
 endmodule
 
+module mux2x1_16(i0,i1,select,y);
+  input [15:0] i0,i1,i2,i3;
+  input select;
+  output [15:0] y;
+
+  mux2x1 mux1 (i0[0], i1[0], select,y[0]);
+  mux2x1 mux2 (i0[1], i1[1], select,y[1]);
+  mux2x1 mux3 (i0[2], i1[2], select,y[2]);
+  mux2x1 mux4 (i0[3], i1[3], select,y[3]);
+  mux2x1 mux5 (i0[4], i1[4], select,y[4]);
+  mux2x1 mux6 (i0[5], i1[5], select,y[5]);
+  mux2x1 mux7 (i0[6], i1[6], select,y[6]);
+  mux2x1 mux8 (i0[7], i1[7], select,y[7]);
+  mux2x1 mux9 (i0[8], i1[8], select,y[8]);
+  mux2x1 mux10(i0[9], i1[9], select,y[9]);
+  mux2x1 mux11(i0[10],i1[10], select,y[10]);
+  mux2x1 mux12(i0[11],i1[11], select,y[11]);
+  mux2x1 mux13(i0[12],i1[12], select,y[12]);
+  mux2x1 mux14(i0[13],i1[13], select,y[13]);
+  mux2x1 mux15(i0[14],i1[14], select,y[14]);
+  mux2x1 mux16(i0[15],i1[15], select,y[15]);
+endmodule
+
+module mux2x1_2(i0,i1,select,y);
+  input [1:0] i0,i1;
+  input select;
+  output [1:0] y;
+
+  mux2x1 mux1 (i0[0], i1[0], select,y[0]);
+  mux2x1 mux2 (i0[1], i1[1], select,y[1]);
+endmodule
+
 module decoder (S1,S0,D3,D2,D1,D0); 
   input S0,S1; 
   output D0,D1,D2,D3; 
@@ -238,40 +270,22 @@ endmodule
 module MainControl (Op,Control); 
 
   input [3:0] Op;
-  output reg [7:0] Control;
+  output reg [8:0] Control;
 
   always @(Op) case (Op)
-    4'b0000: Control <= 8'b10010010; // ADD
-    4'b0001: Control <= 8'b10010010; // SUB
-    4'b0010: Control <= 8'b10010010; // AND
-    4'b0011: Control <= 8'b10010010; // OR
-    4'b0111: Control <= 8'b10010010; // SLT
-    4'b0101: Control <= 8'b01110000; // LW
-    4'b0110: Control <= 8'b01001000; // SW
-    4'b1000: Control <= 8'b00000101; // BEQ
-    4'b0100: Control <= 8'b01010000; // ADDI
+    4'b0000: Control <= 9'b100100010; // ADD
+    4'b0001: Control <= 9'b100100110; // SUB
+    4'b0010: Control <= 9'b100100000; // AND
+    4'b0011: Control <= 9'b100100001; // OR
+    4'b0111: Control <= 9'b100100111; // SLT
+    4'b0101: Control <= 9'b011100000; // LW
+    4'b0110: Control <= 9'b010010000; // SW
+    4'b1000: Control <= 9'b000001010; // BEQ
+    4'b0100: Control <= 9'b010100010; // ADDI  
   endcase
 
 endmodule
 
-module ALUControl (ALUOp,FuncCode,ALUCtl); 
-  input [1:0] ALUOp;
-  input [2:0] FuncCode;
-  output reg [2:0] ALUCtl;
-
-  always @(ALUOp,FuncCode) case (ALUOp)
-    2'b00: ALUCtl <= 3'b010; // add
-    2'b01: ALUCtl <= 3'b110; // subtract
-    2'b10: case (FuncCode)
-	     32: ALUCtl <= 3'b010; // add
-	     34: ALUCtl <= 3'b110; // subtract
-	     36: ALUCtl <= 3'b000; // and
-	     37: ALUCtl <= 3'b001; // or
-	     42: ALUCtl <= 3'b111; // slt
-	default: ALUCtl <= 15; 
-    endcase
-  endcase
-endmodule
 
 // module CPU (clock,WD,IR);
 
@@ -335,29 +349,29 @@ module CPU (clock,WD,IR);
   wire [1:0] WR;
   wire [1:0] op,func;
   wire [2:0] ALUctl;
-  wire [1:0] ALUOp;
+  wire [2:0] ALUOp;
 
 // Test Program:
   initial begin
-    // Instructions need to be translated to match
-    // IMemory[0] = 16'b0101000100000000;  // lw $8, 0($0) -- $1 = DMemory[0] - x
-    // IMemory[1] = 16'b0101001000000010;  // lw $9, 4($0) -- $2 = DMemory[1] - y
-    // IMemory[2] = 16'b0111011011000000;  // slt $10, $8, $9 -- Set $3 on less
-    // IMemory[3] = 16'b1000110000001000;  // beq $10, $0, 8 -- branch to IMemory[8] if $3 == 0
-    // IMemory[4] = 16'b0110000100000010;  // sw $8, 4($0) -- DMemory[0] = $2
-    // IMemory[5] = 16'b0110001000000000;  // sw $9, 0($0) -- DMemory[1] = $1
-    // IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0) -- $1 = y
-    // IMemory[7] = 16'b0101001000000010;  // lw $12, 4($0) -- $2 = x
-    // IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
     
-    IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
-    IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
-    IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
-    IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
-    IMemory[4] = 16'b0011101110000000; // or   $t2, $t2, $t3 # $t2 = 15
-    IMemory[5] = 16'b0000101111000000; // add  $t3, $t2, $t3 # $t3 = 22
-    IMemory[6] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
-    IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
+    IMemory[0] = 16'b0101000100000000;  // lw $8, 0($0) -- $1 = DMemory[0] - x
+    IMemory[1] = 16'b0101001000000010;  // lw $9, 4($0) -- $2 = DMemory[1] - y
+    IMemory[2] = 16'b0111011011000000;  // slt $10, $8, $9 -- Set $3 on less
+    IMemory[3] = 16'b1000110000001000;  // beq $10, $0, 8 -- branch to IMemory[8] if $3 == 0
+    IMemory[4] = 16'b0110000100000010;  // sw $8, 4($0) -- DMemory[0] = $2
+    IMemory[5] = 16'b0110001000000000;  // sw $9, 0($0) -- DMemory[1] = $1
+    IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0) -- $1 = y
+    IMemory[7] = 16'b0101001000000010;  // lw $12, 4($0) -- $2 = x
+    IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
+    
+    // IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
+    // IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
+    // IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
+    // IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
+    // IMemory[4] = 16'b0011101110000000; // or   $t2, $t2, $t3 # $t2 = 15
+    // IMemory[5] = 16'b0000101111000000; // add  $t3, $t2, $t3 # $t3 = 22
+    // IMemory[6] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
+    // IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
 
     // Data
     DMemory [0] = 16'h5; // switch the cells and see how the simulation output changes
@@ -371,15 +385,18 @@ module CPU (clock,WD,IR);
 
   reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
   ALU fetch (3'b010,PC,4,NextPC,Unused1);
-  ALU ex (ALUctl, A, B, ALUOut, Zero);
+  // ALU ex (ALUctl, A, B, ALUOut, Zero);
+  ALU ex (ALUOp, A, B, ALUOut, Zero);
   ALU branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
-  ALUControl ALUCtrl(ALUOp, IR[14:12], ALUctl); // ALU control unit
+  // ALUControl ALUCtrl(ALUOp, IR[14:12], ALUctl); // ALU control unit
 
-  assign WR = (RegDst) ? IR[7:6]: IR[9:8];             // RegDst Mux
+  // assign WR = (RegDst) ? IR[7:6]: IR[9:8];             // RegDst Mux
+  mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
   assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut; // MemtoReg Mux
-  assign B  = (ALUSrc) ? SignExtend: RD2;              // ALUSrc Mux 
+  // assign B  = (ALUSrc) ? SignExtend: RD2;              // ALUSrc Mux 
+  mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
   assign NextPC = (Branch && Zero) ? Target: PCplus4;  // Branch Mux
 
   always @(negedge clock) begin 
@@ -403,7 +420,7 @@ module test ();
   
   initial begin
     $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %h %h", $time,clock,IR,WD);
+    $monitor ("%2d   %b     %h %d", $time,clock,IR,WD);
     clock = 1;
     #18 $finish;
   end

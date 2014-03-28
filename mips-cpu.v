@@ -312,7 +312,6 @@ module CPU (clock,ALUOut,IR);
   ALU fetch (3'b010,PC,4,NextPC,Unused);  // change to 2 instead of 4
 
   ALU ex (ALUOp, A, B, ALUOut, Zero);
-  // ALU ex (ALUOp, A, B, ALUOut, Zero);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
 
