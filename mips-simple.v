@@ -257,7 +257,7 @@ endmodule
 module MainControl (Op,Control); 
 
   input [3:0] Op;
-  output reg [8:0] Control;
+  output reg [9:0] Control;
 
   always @(Op) case (Op)
     4'b0000: Control <= 10'b1001000010; // ADD
@@ -300,6 +300,7 @@ module CPU (clock,WD,IR);
   wire [1:0] op,func;
   wire [2:0] ALUctl;
   wire [2:0] ALUOp;
+  wire [1:0] Branch;
   wire BAZ;
 
 // Test Program:
@@ -314,7 +315,6 @@ module CPU (clock,WD,IR);
     IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0)     -- $1 = y
     IMemory[7] = 16'b0101001000000100;  // lw $12, 4($0)     -- $2 = x
     IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
-    // IMemory[9] = 16'b1001 0000 0000 0000;  // bne
     
     // IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
     // IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
@@ -354,8 +354,9 @@ module CPU (clock,WD,IR);
   mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
   
   // assign NextPC = (Branch && Zero) ? Target: PCplus4;           // Branch Mux
-  and branchAndZero(BAZ, Branch, Zero);
-  mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
+  // and branchAndZero(BAZ, Branch, Zero);
+  BranchControl BranchCon (Branch, Zero, BranchConOut);
+  mux2x1_16 BranchMux (PCplus4, Target, BranchConOut, NextPC);
   // ------------------------------------------------------------- //
 
   always @(negedge clock) begin 
@@ -378,10 +379,10 @@ module test ();
   always #1 clock = ~clock;
   
   initial begin
-    $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %b %d", $time,clock,IR,WD);
+    $display ("time clock IR   WD");
+    $monitor ("%2d   %b     %h %h", $time,clock,IR,WD);
     clock = 1;
-    #18 $finish;
+    #17 $finish;
   end
 
 endmodule
