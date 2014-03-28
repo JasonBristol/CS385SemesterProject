@@ -267,7 +267,7 @@ module MainControl (Op,Control);
     4'b0111: Control <= 9'b100100111; // SLT
     4'b0101: Control <= 9'b011100000; // LW
     4'b0110: Control <= 9'b010010000; // SW
-    4'b1000: Control <= 9'b000001010; // BEQ
+    4'b1000: Control <= 9'b000001001; // BEQ
     4'b0100: Control <= 9'b010100010; // ADDI  
   endcase
 
@@ -336,9 +336,9 @@ module CPU (clock,WD,IR);
   // assign B  = (ALUSrc) ? SignExtend: RD2;                     // ALUSrc Mux 
   mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
   
-  //assign NextPC = (Branch && Zero) ? Target: PCplus4;          // Branch Mux
-  and branchAndZero(BAZ, Branch, Zero);
-  mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
+  assign NextPC = (Branch && Zero) ? Target: PCplus4;            // Branch Mux
+  // and branchAndZero(BAZ, Branch, Zero);
+  // mux2x1_16 BranchMux (PCplus4, Target, BAZ, NextPC);
   // ----------------------------------------------------------- //
 
   always @(negedge clock) begin 
