@@ -272,30 +272,6 @@ module MainControl (Op,Control);
 
 endmodule
 
-module ALUControl (ALUOp,FuncCode,ALUCtl); 
-  input [1:0] ALUOp;
-  input [2:0] FuncCode;
-  output reg [2:0] ALUCtl;
-
-  always @(ALUOp,FuncCode) case (ALUOp)
-    2'b00: ALUCtl <= 3'b010; // add
-    2'b01: ALUCtl <= 3'b110; // subtract
-    2'b10: case (FuncCode)
-	     // 32: ALUCtl <= 3'b010; // add
-	     // 34: ALUCtl <= 3'b110; // sub
-	     // 36: ALUCtl <= 3'b000; // and
-	     // 37: ALUCtl <= 3'b001; // or
-	     // 42: ALUCtl <= 3'b111; // slt
-       3'b000: ALUCtl <= 3'b010; //add
-       3'b001: ALUCtl <= 3'b110; // sub
-       3'b010: ALUCtl <= 3'b000; // and
-       3'b011: ALUCtl <= 3'b001; // or
-       3'b111: ALUCtl <= 3'b111; // slt
-	default: ALUCtl <= 15; 
-    endcase
-  endcase
-endmodule
-
 module CPU (clock,ALUOut,IR);
 
   input clock;
@@ -339,8 +315,6 @@ module CPU (clock,ALUOut,IR);
   // ALU ex (ALUOp, A, B, ALUOut, Zero);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
-
-  //ALUControl ALUCtrl(ALUOp, IR[14:12], ALUctl); // ALU control unit
 
   always @(negedge clock) begin 
     PC <= NextPC;
