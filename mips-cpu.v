@@ -1,4 +1,4 @@
-// Gate Level model of MIPS - single cycle implementation, R-types and addi
+// Gate Level model of MIPS - single cycle implementation
 
 module reg_file (rr1,rr2,wr,wd,regwrite,rd1,rd2,clock);
 
@@ -253,70 +253,105 @@ module mux4x1(i0,i1,i2,i3,select,y);
   mux2x1 mux3(m1, m2, select[1], y);
 endmodule
 
+
 module MainControl (Op,Control); 
 
   input [3:0] Op;
-  output reg [8:0] Control;
+  output reg [9:0] Control;
 
   always @(Op) case (Op)
-    4'b0000: Control <= 9'b100100010; // add
-    4'b0001: Control <= 9'b100100110; // sub
-    4'b0010: Control <= 9'b100100000; // and
-    4'b0011: Control <= 9'b100100001; // or
-    4'b0111: Control <= 9'b100100111; // slt
-    4'b0101: Control <= 9'b011100000; // LW  (Not implemented) ??
-    4'b0110: Control <= 9'b010010000; // SW  (Not implemented) ??
-    4'b1000: Control <= 9'b000001001; // BEQ (Not implemented) ?? 
-    4'b0100: Control <= 9'b010100010; // ADDI  
+    4'b0000: Control <= 10'b1001000010; // ADD
+    4'b0001: Control <= 10'b1001000110; // SUB
+    4'b0010: Control <= 10'b1001000000; // AND
+    4'b0011: Control <= 10'b1001000001; // OR
+    4'b0111: Control <= 10'b1001000111; // SLT
+    4'b0101: Control <= 10'b0111000010; // LW  <-
+    4'b0110: Control <= 10'b0100100010; // SW  <-
+    4'b1000: Control <= 10'b0000001110; // BEQ <-
+    4'b1001: Control <= 10'b0000010110; // BNE <-
+    4'b0100: Control <= 10'b0101000010; // ADDI  
   endcase
 
 endmodule
 
-module CPU (clock,ALUOut,IR);
+
+module BranchControl (BranchOp,Zero,BranchOut);
+
+  input [1:0] BranchOp;
+  input Zero;
+  output BranchOut;
+  wire ZeroInvert,i0,i1;
+
+  not not1(ZeroInvert,Zero);
+  and and1(i0,BranchOp[0],Zero);
+  and and2(i1,BranchOp[1],ZeroInvert);
+  or or1(BranchOut,i0,i1);
+
+endmodule
+
+
+module CPU (clock,WD,IR);
 
   input clock;
-  output [15:0] ALUOut,IR;
-  reg[15:0] PC;
-  reg[15:0] IMemory[0:1023];
-  wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend;
+  output [15:0] WD,IR;
+  reg[15:0] PC,IMemory[0:1023],DMemory[0:1023];
+  wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend,PCplus2,Target;
+  wire [1:0] WR;
+  wire [1:0] op,func;
   wire [2:0] ALUctl;
   wire [2:0] ALUOp;
-  wire [1:0] WR; 
+  wire [1:0] Branch;
 
 // Test Program:
-  initial begin 
-    IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
-    IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
-    IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
-    IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
-    IMemory[4] = 16'b0011101110000000; // or   $t2, $t2, $t3 # $t2 = 15
-    IMemory[5] = 16'b0000101111000000; // add  $t3, $t2, $t3 # $t3 = 22
-    IMemory[6] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
-    IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
+  initial begin
+    
+    IMemory[0] = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = DMemory[0] - x
+    IMemory[1] = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = DMemory[1] - y
+    IMemory[2] = 16'b0111011011000000;  // slt $3, $1, $2    -- Set $3 on less
+    IMemory[3] = 16'b1000110000000100;  // beq $3, $0, 4     -- branch to IMemory[8] if $3 == 0
+    IMemory[4] = 16'b0110000100000010;  // sw $1, 2($0)      -- DMemory[1] = $1
+    IMemory[5] = 16'b0110001000000000;  // sw $2, 0($0)      -- DMemory[0] = $2
+    IMemory[6] = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = y
+    IMemory[7] = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = x
+    IMemory[8] = 16'b0001011001000000;  // sub $1, $1, $2 -- $1 gets ($1 - $2)
+
+    // Data
+    DMemory [0] = 16'h5; // switch the cells and see how the simulation output changes
+    DMemory [1] = 16'h7;
   end
 
   initial PC = 0;
 
-  assign IR = IMemory[PC>>2];
-
-  // assign WR = (RegDst) ? IR[7:6]: IR[9:8]; // RegDst Mux
-  mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
-
-  //assign B  = (ALUSrc) ? SignExtend: RD2; // ALUSrc Mux
-  mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
-
+  assign IR = IMemory[PC>>1];
   assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
-  reg_file rf (IR[11:10],IR[9:8],WR,ALUOut,RegWrite,A,RD2,clock);
+  reg_file rf (IR[11:10],IR[9:8],WR,WD,RegWrite,A,RD2,clock);
 
-  ALU fetch (3'b010,PC,4,NextPC,Unused);  // change to 2 instead of 4
-
+  ALU fetch (3'b010,PC,2,PCplus2,Unused1);
   ALU ex (ALUOp, A, B, ALUOut, Zero);
+  ALU branch (3'b010,SignExtend<<1,PCplus2,Target,Unused2);
 
-  MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp}); 
+  MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp});
+  
+  // -----------------------Mux Block----------------------------- //
+  // assign WR = (RegDst) ? IR[7:6]: IR[9:8];                      // RegDst Mux
+  mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
+  
+  // assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;          // MemtoReg Mux
+  mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>1], MemtoReg, WD);
+  
+  // assign B  = (ALUSrc) ? SignExtend: RD2;                       // ALUSrc Mux 
+  mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
+  
+  // assign NextPC = (Branch && Zero) ? Target: PCplus4;           // Branch Mux
+  // and branchAndZero(BAZ, Branch, Zero);
+  BranchControl BranchCon (Branch, Zero, BranchConOut);
+  mux2x1_16 BranchMux (PCplus2, Target, BranchConOut, NextPC);
+  // ------------------------------------------------------------- //
 
   always @(negedge clock) begin 
     PC <= NextPC;
+    if (MemWrite) DMemory[ALUOut>>1] <= RD2;
   end
 
 endmodule
@@ -334,10 +369,10 @@ module test ();
   always #1 clock = ~clock;
   
   initial begin
-    $display ("time clock IR       WD");
-    $monitor ("%2d   %b     %h  %d", $time,clock,IR,WD);
+    $display ("time clock IR   WD");
+    $monitor ("%2d   %b   %b %d", $time,clock,IR,WD);
     clock = 1;
-    #14 $finish;
+    #17 $finish;
   end
 
 endmodule
@@ -345,23 +380,28 @@ endmodule
 
 /* Compiling and simulation
 
-C:\Markov\CCSU Stuff\Courses\Spring-11\CS385\HDL>iverilog mips-r-type+addi.vl
+C:\CS385\HDL>iverilog -o cpu mips-simple.v
 
-C:\Markov\CCSU Stuff\Courses\Spring-11\CS385\HDL>vvp a.out
+C:\CS385\HDL>vvp cpu
 
 time clock IR       WD
- 0   1     2009000f 0000000f
- 1   0     200a0007 00000007
- 2   1     200a0007 00000007
- 3   0     012a5824 00000007
- 4   1     012a5824 00000007
- 5   0     012b5022 00000008
- 6   1     012b5022 00000008
- 7   0     014b5025 0000000f
- 8   1     014b5025 0000000f
- 9   0     016a482a 00000001
-10   1     016a482a 00000001
-11   0     014b482a 00000000
-12   1     014b482a 00000000
+ 0   0     8c080000 00000005
+ 1   1     8c090004 00000007
+ 2   0     8c090004 00000007
+ 3   1     0109502a 00000001
+ 4   0     0109502a 00000001
+ 5   1     11400002 00000001
+ 6   0     11400002 00000001
+ 7   1     ac080004 00000004
+ 8   0     ac080004 00000004
+ 9   1     ac090000 00000000
+10   0     ac090000 00000000
+11   1     8c0b0000 00000007
+12   0     8c0b0000 00000007
+13   1     8c0c0004 00000005
+14   0     8c0c0004 00000005
+15   1     016c5822 00000002
+16   0     016c5822 00000002
+17   1     xxxxxxxx 0000000X
 
 */
