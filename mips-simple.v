@@ -307,7 +307,7 @@ module CPU (clock,WD,IR);
     
     IMemory[0] = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = DMemory[0] - x
     IMemory[1] = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = DMemory[1] - y
-    IMemory[2] = 16'b0111011011000000;  // slt $3, $8, $9    -- Set $3 on less
+    IMemory[2] = 16'b0111011011000000;  // slt $3, $1, $2    -- Set $3 on less
     IMemory[3] = 16'b1000110000000100;  // beq $3, $0, 4     -- branch to IMemory[8] if $3 == 0
     IMemory[4] = 16'b0110000100000010;  // sw $1, 2($0)      -- DMemory[1] = $1
     IMemory[5] = 16'b0110001000000000;  // sw $2, 0($0)      -- DMemory[0] = $2
