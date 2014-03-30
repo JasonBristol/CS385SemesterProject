@@ -322,7 +322,7 @@ module CPU (clock,WD,IR);
 
   initial PC = 0;
 
-  assign IR = IMemory[PC>>2];
+  assign IR = IMemory[PC>>1];
   assign SignExtend = {{8{IR[7]}},IR[7:0]}; // sign extension unit
 
   reg_file rf (IR[11:10],IR[9:8],WR,WD,RegWrite,A,RD2,clock);
