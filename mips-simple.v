@@ -295,35 +295,25 @@ module CPU (clock,WD,IR);
   input clock;
   output [15:0] WD,IR;
   reg[15:0] PC,IMemory[0:1023],DMemory[0:1023];
-  wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend,PCplus4,Target;
+  wire [15:0] IR,NextPC,A,B,ALUOut,RD2,SignExtend,PCplus2,Target;
   wire [1:0] WR;
   wire [1:0] op,func;
   wire [2:0] ALUctl;
   wire [2:0] ALUOp;
   wire [1:0] Branch;
-  wire BAZ;
 
 // Test Program:
   initial begin
     
-    IMemory[0] = 16'b0101000100000000;  // lw $8, 0($0)      -- $1 = DMemory[0] - x
-    IMemory[1] = 16'b0101001000000100;  // lw $9, 4($0)      -- $2 = DMemory[1] - y
-    IMemory[2] = 16'b0111011011000000;  // slt $10, $8, $9   -- Set $3 on less
-    IMemory[3] = 16'b1000110000001000;  // beq $10, $0, 8    -- branch to IMemory[8] if $3 == 0
-    IMemory[4] = 16'b0110000100000100;  // sw $8, 4($0)      -- DMemory[0] = $2
-    IMemory[5] = 16'b0110001000000000;  // sw $9, 0($0)      -- DMemory[1] = $1
-    IMemory[6] = 16'b0101000100000000;  // lw $11, 0($0)     -- $1 = y
-    IMemory[7] = 16'b0101001000000100;  // lw $12, 4($0)     -- $2 = x
-    IMemory[8] = 16'b0001011001000000;  // sub $11, $11, $12 -- $1 gets ($1 - $2)
-    
-    // IMemory[0] = 16'b0100000100001111; // addi $t1, $0, 15   # $t1 = 15
-    // IMemory[1] = 16'b0100001000000111; // addi $t2, $0, 7    # $t2 = 7
-    // IMemory[2] = 16'b0010011011000000; // and  $t3, $t1, $t2 # $t3 = 7
-    // IMemory[3] = 16'b0001011110000000; // sub  $t2, $t1, $t3 # $t2 = 8
-    // IMemory[4] = 16'b0011101110000000; // or   $t2, $t2, $t3 # $t2 = 15
-    // IMemory[5] = 16'b0000101111000000; // add  $t3, $t2, $t3 # $t3 = 22
-    // IMemory[6] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
-    // IMemory[7] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
+    IMemory[0] = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = DMemory[0] - x
+    IMemory[1] = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = DMemory[1] - y
+    IMemory[2] = 16'b0111011011000000;  // slt $3, $8, $9    -- Set $3 on less
+    IMemory[3] = 16'b1000110000000100;  // beq $3, $0, 4     -- branch to IMemory[8] if $3 == 0
+    IMemory[4] = 16'b0110000100000010;  // sw $1, 2($0)      -- DMemory[1] = $1
+    IMemory[5] = 16'b0110001000000000;  // sw $2, 0($0)      -- DMemory[0] = $2
+    IMemory[6] = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = y
+    IMemory[7] = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = x
+    IMemory[8] = 16'b0001011001000000;  // sub $1, $1, $2 -- $1 gets ($1 - $2)
 
     // Data
     DMemory [0] = 16'h5; // switch the cells and see how the simulation output changes
@@ -337,9 +327,9 @@ module CPU (clock,WD,IR);
 
   reg_file rf (IR[11:10],IR[9:8],WR,WD,RegWrite,A,RD2,clock);
 
-  ALU fetch (3'b010,PC,4,PCplus4,Unused1);
+  ALU fetch (3'b010,PC,2,PCplus2,Unused1);
   ALU ex (ALUOp, A, B, ALUOut, Zero);
-  ALU branch (3'b010,SignExtend<<2,PCplus4,Target,Unused2);
+  ALU branch (3'b010,SignExtend<<1,PCplus2,Target,Unused2);
 
   MainControl MainCtr (IR[15:12],{RegDst,ALUSrc,MemtoReg,RegWrite,MemWrite,Branch,ALUOp});
   
@@ -348,7 +338,7 @@ module CPU (clock,WD,IR);
   mux2x1_2 RegDstMux (IR[9:8], IR[7:6], RegDst, WR);
   
   // assign WD = (MemtoReg) ? DMemory[ALUOut>>2]: ALUOut;          // MemtoReg Mux
-  mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>2], MemtoReg, WD);
+  mux2x1_16 Mem2Reg (ALUOut, DMemory[ALUOut>>1], MemtoReg, WD);
   
   // assign B  = (ALUSrc) ? SignExtend: RD2;                       // ALUSrc Mux 
   mux2x1_16 ALUSrcMux (RD2, SignExtend, ALUSrc, B);
@@ -356,12 +346,12 @@ module CPU (clock,WD,IR);
   // assign NextPC = (Branch && Zero) ? Target: PCplus4;           // Branch Mux
   // and branchAndZero(BAZ, Branch, Zero);
   BranchControl BranchCon (Branch, Zero, BranchConOut);
-  mux2x1_16 BranchMux (PCplus4, Target, BranchConOut, NextPC);
+  mux2x1_16 BranchMux (PCplus2, Target, BranchConOut, NextPC);
   // ------------------------------------------------------------- //
 
   always @(negedge clock) begin 
     PC <= NextPC;
-    if (MemWrite) DMemory[ALUOut>>2] <= RD2;
+    if (MemWrite) DMemory[ALUOut>>1] <= RD2;
   end
 
 endmodule
@@ -380,7 +370,7 @@ module test ();
   
   initial begin
     $display ("time clock IR   WD");
-    $monitor ("%2d   %b     %h %h", $time,clock,IR,WD);
+    $monitor ("%2d   %b   %b %d", $time,clock,IR,WD);
     clock = 1;
     #17 $finish;
   end
