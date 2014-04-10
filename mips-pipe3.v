@@ -320,14 +320,14 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
 
   // ID
   reg [15:0] IDEX_IR; // For monitoring the pipeline
-  wire [7:0] Control; // Needs to be checked for compliance with 16-bit
+  wire [9:0] Control; // Needs to be checked for compliance with 16-bit
   reg IDEX_RegWrite,IDEX_MemtoReg,
       IDEX_Branch,  IDEX_MemWrite,
       IDEX_ALUSrc,  IDEX_RegDst;
-  reg [1:0]  IDEX_ALUOp; // Needs to be checked for compliance with 16-bit
+  reg [2:0]  IDEX_ALUOp; // Needs to be checked for compliance with 16-bit
   wire [15:0] RD1,RD2,SignExtend, WD;
   reg [15:0] IDEX_RD1,IDEX_RD2,IDEX_SignExt,IDEXE_IR;
-  reg [4:0]  IDEX_rt,IDEX_rd; // Needs to be checked for compliance with 16-bit
+  reg [1:0]  IDEX_rt,IDEX_rd; // Needs to be checked for compliance with 16-bit
   reg_file rf (IFID_IR[11:10],IFID_IR[9:8],WR,WD,IDEX_RegWrite,RD1,RD2,clock);
   MainControl MainCtr (IFID_IR[15:12],Control); 
   assign SignExtend = {{8{IFID_IR[7]}},IFID_IR[7:0]}; 
@@ -336,7 +336,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
   wire [15:0] B,ALUOut;
   // wire [2:0] ALUctl;
   wire [1:0] WR;
-  ALU ex (ALUop, IDEX_RD1, B, ALUOut, Zero);
+  ALU ex (IDEX_ALUOp, IDEX_RD1, B, ALUOut, Zero);
   // ALUControl ALUCtrl(IDEX_ALUOp, IDEX_IR[5:0], ALUctl); // ALU control unit
   // assign B  = (IDEX_ALUSrc) ? IDEX_SignExt: IDEX_RD2;        // ALUSrc Mux 
   mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);
