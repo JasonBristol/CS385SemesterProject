@@ -335,7 +335,8 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
   // ID
   reg [15:0] IDEX_IR; // For monitoring the pipeline
   wire [9:0] Control; // Needs to be checked for compliance with 16-bit
-  reg IDEX_RegWrite, IDEX_ALUSrc, IDEX_RegDst;
+  reg IDEX_RegWrite, IDEX_ALUSrc, IDEX_RegDst, IDEX_MemtoReg, IDEX_MemWrite;
+  reg [1:0] IDEX_Branch;
   reg [2:0]  IDEX_ALUOp; // Needs to be checked for compliance with 16-bit
   wire [15:0] RD1,RD2,SignExtend, WD;
   reg [15:0] IDEX_RD1,IDEX_RD2,IDEX_SignExt;
@@ -399,7 +400,7 @@ module test ();
   
   initial begin
     $display ("time PC  IFID_IR  IDEX_IR  WD");
-    $monitor ("%2d  %3d  %h     %h     %h", $time,PC,IFID_IR,IDEX_IR,WD);
+    $monitor ("%2d  %3d  %b     %b     %d", $time,PC,IFID_IR,IDEX_IR,WD);
     clock = 1;
     #29 $finish;
   end
