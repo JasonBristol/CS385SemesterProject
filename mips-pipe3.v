@@ -265,29 +265,14 @@ module MainControl (Op,Control);
     4'b0010: Control <= 10'b1001000000; // AND
     4'b0011: Control <= 10'b1001000001; // OR
     4'b0111: Control <= 10'b1001000111; // SLT
-    4'b0101: Control <= 10'b0111000010; // LW  <-
-    4'b0110: Control <= 10'b0100100010; // SW  <-
-    4'b1000: Control <= 10'b0000001110; // BEQ <-
-    4'b1001: Control <= 10'b0000010110; // BNE <-
+    4'b0101: Control <= 10'b0111000010; // LW
+    4'b0110: Control <= 10'b0100100010; // SW
+    4'b1000: Control <= 10'b0000001110; // BEQ
+    4'b1001: Control <= 10'b0000010110; // BNE
     4'b0100: Control <= 10'b0101000010; // ADDI  
   endcase
 
 endmodule
-
-
-// module BranchControl (BranchOp,Zero,BranchOut);
-
-//   input [1:0] BranchOp;
-//   input Zero;
-//   output BranchOut;
-//   wire ZeroInvert,i0,i1;
-
-//   not not1(ZeroInvert,Zero);
-//   and and1(i0,BranchOp[0],Zero);
-//   and and2(i1,BranchOp[1],ZeroInvert);
-//   or or1(BranchOut,i0,i1);
-
-// endmodule
 
 module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
 
@@ -309,20 +294,6 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
     IMemory[10] = 16'b0000000000000000; // nop
     IMemory[11] = 16'b0111111001000000; // slt  $t1, $t3, $t2 # $t1 = 0
     IMemory[12] = 16'b0111101101000000; // slt  $t1, $t2, $t3 # $t1 = 1
-
-    // IMemory[0]  = 32'h2009000f;  // addi $t1, $0,  15   ($t1=15)
-    // IMemory[1]  = 32'h200a0007;  // addi $t2, $0,  7    ($t2= 7)
-    // IMemory[2]  = 32'h00000000;  // nop
-    // IMemory[3]  = 32'h012a5824;  // and  $t3, $t1, $t2  ($t3= 7)
-    // IMemory[4]  = 32'h00000000;  // nop
-    // IMemory[5]  = 32'h012b5022;  // sub  $t2, $t1, $t3  ($t2= 8)
-    // IMemory[6]  = 32'h00000000;  // nop
-    // IMemory[7]  = 32'h014b5025;  // or   $t2, $t2, $t3  ($t2=15)
-    // IMemory[8]  = 32'h00000000;  // nop
-    // IMemory[9]  = 32'h014b5820;  // add  $t3, $t2, $t3  ($t3=22)
-    // IMemory[10] = 32'h00000000;  // nop
-    // IMemory[11] = 32'h016a482a;  // slt  $t1, $t3, $t2  ($t1= 0)
-    // IMemory[12] = 32'h014b482a;  // slt  $t1, $t2, $t3  ($t1= 1)
   end
 
   // Pipeline stages
@@ -334,13 +305,13 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
 
   // ID
   reg [15:0] IDEX_IR; // For monitoring the pipeline
-  wire [9:0] Control; // Needs to be checked for compliance with 16-bit
-  reg IDEX_RegWrite, IDEX_ALUSrc, IDEX_RegDst, IDEX_MemtoReg, IDEX_MemWrite;
+  wire [9:0] Control;
+  reg IDEX_RegWrite,IDEX_ALUSrc,IDEX_RegDst,IDEX_MemtoReg,IDEX_MemWrite;
   reg [1:0] IDEX_Branch;
-  reg [2:0]  IDEX_ALUOp; // Needs to be checked for compliance with 16-bit
+  reg [2:0]  IDEX_ALUOp;
   wire [15:0] RD1,RD2,SignExtend, WD;
   reg [15:0] IDEX_RD1,IDEX_RD2,IDEX_SignExt;
-  reg [1:0]  IDEX_rt,IDEX_rd; // Needs to be checked for compliance with 16-bit
+  reg [1:0]  IDEX_rt,IDEX_rd;
   reg_file rf (IFID_IR[11:10],IFID_IR[9:8],WR,WD,IDEX_RegWrite,RD1,RD2,clock);
   MainControl MainCtr (IFID_IR[15:12],Control); 
   assign SignExtend = {{8{IFID_IR[7]}},IFID_IR[7:0]}; 
@@ -350,11 +321,9 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
   // wire [2:0] ALUctl;
   wire [1:0] WR;
   ALU ex (IDEX_ALUOp, IDEX_RD1, B, ALUOut, Zero);
-  // ALUControl ALUCtrl(IDEX_ALUOp, IDEX_IR[5:0], ALUctl); // ALU control unit
-  // assign B  = (IDEX_ALUSrc) ? IDEX_SignExt: IDEX_RD2;        // ALUSrc Mux 
-  mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);
-  // assign WR = (IDEX_RegDst) ? IDEX_rd: IDEX_rt;              // RegDst Mux
-  mux2x1_2 RegDstMux (IDEX_rt, IDEX_rd, IDEX_RegDst, WR);
+  // ALUControl ALUCtrl(IDEX_ALUOp, IDEX_IR[5:0], ALUctl); // ALU control unit     
+  mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B); // ALUSrc Mux  
+  mux2x1_2 RegDstMux (IDEX_rt, IDEX_rd, IDEX_RegDst, WR);       // RegDst Mux
   assign WD = ALUOut;
 
   initial begin
@@ -376,8 +345,8 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
     IDEX_RD1 <= RD1; 
     IDEX_RD2 <= RD2;
     IDEX_SignExt <= SignExtend;
-    IDEX_rt <= IFID_IR[20:16]; // Needs to be converted to 16-bit
-    IDEX_rd <= IFID_IR[15:11]; // Needs to be converted to 16-bit
+    IDEX_rt <= IFID_IR[9:8];
+    IDEX_rd <= IFID_IR[7:6];
 
   // Stage 3 - EX
   // No transfers needed here - on negedge WD is written into register WR
@@ -400,7 +369,7 @@ module test ();
   
   initial begin
     $display ("time PC  IFID_IR  IDEX_IR  WD");
-    $monitor ("%2d  %3d  %b     %b     %d", $time,PC,IFID_IR,IDEX_IR,WD);
+    $monitor ("%2d  %3d  %h     %h     %h", $time,PC,IFID_IR,IDEX_IR,WD);
     clock = 1;
     #29 $finish;
   end
