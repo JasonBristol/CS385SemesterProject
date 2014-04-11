@@ -329,18 +329,16 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,WD);
 
   // IF 
   wire [15:0] PCplus2, NextPC;
-  reg[15:0] PC, IMemory[0:1023], IFID_IR, IFID_PCplus2;
+  reg[15:0] PC, IMemory[0:1023], IFID_IR;
   ALU fetch (3'b010,PC,2,NextPC,Unused);
 
   // ID
   reg [15:0] IDEX_IR; // For monitoring the pipeline
   wire [9:0] Control; // Needs to be checked for compliance with 16-bit
-  reg IDEX_RegWrite,IDEX_MemtoReg,
-      IDEX_Branch,  IDEX_MemWrite,
-      IDEX_ALUSrc,  IDEX_RegDst;
+  reg IDEX_RegWrite, IDEX_ALUSrc, IDEX_RegDst;
   reg [2:0]  IDEX_ALUOp; // Needs to be checked for compliance with 16-bit
   wire [15:0] RD1,RD2,SignExtend, WD;
-  reg [15:0] IDEX_RD1,IDEX_RD2,IDEX_SignExt,IDEXE_IR;
+  reg [15:0] IDEX_RD1,IDEX_RD2,IDEX_SignExt;
   reg [1:0]  IDEX_rt,IDEX_rd; // Needs to be checked for compliance with 16-bit
   reg_file rf (IFID_IR[11:10],IFID_IR[9:8],WR,WD,IDEX_RegWrite,RD1,RD2,clock);
   MainControl MainCtr (IFID_IR[15:12],Control); 
