@@ -257,19 +257,22 @@ endmodule
 module MainControl (Op,Control); 
 
   input [3:0] Op;
-  output reg [9:0] Control;
+  output reg [10:0] Control;
 
   always @(Op) case (Op)
-    4'b0000: Control <= 10'b1001000010; // ADD
-    4'b0001: Control <= 10'b1001000110; // SUB
-    4'b0010: Control <= 10'b1001000000; // AND
-    4'b0011: Control <= 10'b1001000001; // OR
-    4'b0111: Control <= 10'b1001000111; // SLT
-    4'b0101: Control <= 10'b0111000010; // LW
-    4'b0110: Control <= 10'b0100100010; // SW
-    4'b1000: Control <= 10'b0000001110; // BEQ
-    4'b1001: Control <= 10'b0000010110; // BNE
-    4'b0100: Control <= 10'b0101000010; // ADDI  
+  //IDEX_RegDst,IDEX_ALUSrc[1:0],IDEX_MemtoReg,IDEX_RegWrite,IDEX_MemWrite,IDEX_Branch[1:0],IDEX_ALUOp[2:0] 
+    4'b0000: Control <= 10'b10001000010; // ADD
+    4'b0001: Control <= 10'b10001000110; // SUB
+    4'b0010: Control <= 10'b10001000000; // AND
+    4'b0011: Control <= 10'b10001000001; // OR
+    4'b0111: Control <= 10'b10001000111; // SLT
+    4'b0101: Control <= 10'b00111000010; // LW
+    4'b0110: Control <= 10'b00100100010; // SW
+    4'b1000: Control <= 10'b00000001110; // BEQ
+    4'b1001: Control <= 10'b00000010110; // BNE
+    4'b0100: Control <= 10'b00101000010; // ADDI  
+    4'b1111: Control <= 10'b01001000001; // LUI  
+    
   endcase
 
 endmodule
@@ -384,8 +387,8 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
 // ID
    wire [9:0] Control;
-   reg IDEX_RegWrite,IDEX_MemtoReg,IDEX_MemWrite,IDEX_ALUSrc,  IDEX_RegDst;
-   reg [1:0] IDEX_Branch;
+   reg IDEX_RegWrite,IDEX_MemtoReg,IDEX_MemWrite, IDEX_RegDst;
+   reg [1:0] IDEX_Branch, IDEX_ALUSrc;
    reg [2:0]  IDEX_ALUOp;
    wire [15:0] RD1,RD2,SignExtend, WD;
    reg [15:0] IDEX_PCplus2,IDEX_RD1,IDEX_RD2,IDEX_SignExt,IDEXE_IR;
@@ -413,7 +416,8 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    // assign WR = (IDEX_RegDst) ? IDEX_rd: IDEX_rt;              // RegDst Mux
 
    mux2x1_2 RegDstMux (IDEX_rt, IDEX_rd, IDEX_RegDst, WR);         // RegDst Mux
-   mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);          // ALUSrc Mux
+   //mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);          // ALUSrc Mux
+   ALUSrcControl1 ALUSrcControl(B, IDEX_RD2, IDEX_SignExt, IDEX_SignExt<<8, IDEX_ALUSrc);
 
 // MEM
    reg MEMWB_RegWrite,MEMWB_MemtoReg;
