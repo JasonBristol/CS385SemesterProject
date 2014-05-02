@@ -288,6 +288,56 @@ module BranchControl (BranchOp,Zero,BranchOut);
 
 endmodule
 
+module ALUSrcControl (ALUSRC, RD2, SignExt, ShiftToUpper, ALUOP);
+  
+  input [15:0] RD2, SignExt, ShiftToUpper;
+  input [1:0] ALUOP;
+  output [15:0] ALUSRC;
+  wire w1;
+  wire wa1_0,wa1_1,wa1_2,wa1_3,wa1_4,wa1_5,wa1_6,wa1_7,wa1_8,wa1_9,wa1_10,wa1_11,wa1_12,wa1_13,wa1_14,wa1_15; 
+  wire wa2_0,wa2_1,wa2_2,wa2_3,wa2_4,wa2_5,wa2_6,wa2_7,wa2_8,wa2_9,wa2_10,wa2_11,wa2_12,wa2_13,wa2_14,wa2_15;
+  wire wa3_0,wa3_1,wa3_2,wa3_3,wa3_4,wa3_5,wa3_6,wa3_7,wa3_8,wa3_9,wa3_10,wa3_11,wa3_12,wa3_13,wa3_14,wa3_15;
+  
+  nor nor1(w1, ALUOP[0], ALUOP[1]);
+  
+  and and1_0(wa1_0, w1, RD[0]);    and and1_1(wa1_1, w1, RD[1]);
+  and and1_2(wa1_2, w1, RD[2]);    and and1_3(wa1_3, w1, RD[3]); 
+  and and1_4(wa1_4, w1, RD[4]);    and and1_5(wa1_5, w1, RD[5]);
+  and and1_6(wa1_6, w1, RD[6]);    and and1_7(wa1_7, w1, RD[7]);  
+  and and1_8(wa1_8, w1, RD[8]);    and and1_9(wa1_9, w1, RD[9]);
+  and and1_10(wa1_10, w1, RD[10]); and and1_11(wa1_11, w1, RD[11]);
+  and and1_12(wa1_12, w1, RD[12]); and and1_13(wa1_13, w1, RD[13]);
+  and and1_14(wa1_14, w1, RD[14]); and and1_15(wa1_15, w1, RD[15]);
+
+  and and2_0(wa2_0, ALUOP[0], SignExt[0]);    and and2_1(wa2_1, ALUOP[0], SignExt[1]);
+  and and2_2(wa2_2, ALUOP[0], SignExt[2]);    and and2_3(wa2_3, ALUOP[0], SignExt[3]);
+  and and2_4(wa2_4, ALUOP[0], SignExt[4]);    and and2_5(wa2_5, ALUOP[0], SignExt[5]);
+  and and2_6(wa2_6, ALUOP[0], SignExt[6]);    and and2_7(wa2_7, ALUOP[0], SignExt[7]);
+  and and2_8(wa2_8, ALUOP[0], SignExt[8]);    and and2_9(wa2_9, ALUOP[0], SignExt[9]); 
+  and and2_10(wa2_10, ALUOP[0], SignExt[10]); and and2_11(wa2_11, ALUOP[0], SignExt[11]);
+  and and2_12(wa2_12, ALUOP[0], SignExt[12]); and and2_13(wa2_13, ALUOP[0], SignExt[13]);
+  and and2_14(wa2_14, ALUOP[0], SignExt[14]); and and2_15(wa2_15, ALUOP[0], SignExt[15]);
+
+  and and3_0(wa3_0, ALUOP[1], ShiftToUpper[0]);    and and3_1(wa3_1, ALUOP[1], ShiftToUpper[1]); 
+  and and3_2(wa3_2, ALUOP[1], ShiftToUpper[2]);    and and3_3(wa3_3, ALUOP[1], ShiftToUpper[3]); 
+  and and3_4(wa3_4, ALUOP[1], ShiftToUpper[4]);    and and3_5(wa3_5, ALUOP[1], ShiftToUpper[5]);
+  and and3_6(wa3_6, ALUOP[1], ShiftToUpper[6]);    and and3_7(wa3_7, ALUOP[1], ShiftToUpper[7]);
+  and and3_8(wa3_8, ALUOP[1], ShiftToUpper[8]);    and and3_9(wa3_9, ALUOP[1], ShiftToUpper[9]);
+  and and3_10(wa3_10, ALUOP[1], ShiftToUpper[10]); and and3_11(wa3_11, ALUOP[1], ShiftToUpper[11]);
+  and and3_12(wa3_12, ALUOP[1], ShiftToUpper[12]); and and3_13(wa3_13, ALUOP[1], ShiftToUpper[13]);
+  and and3_14(wa3_14, ALUOP[1], ShiftToUpper[14]); and and3_14(wa3_14, ALUOP[1], ShiftToUpper[14]);
+  
+  or(ALRSRC[0], wa1_0, wa2_0, wa3_0);     or(ALRSRC[1], wa1_1, wa2_1, wa3_1);
+  or(ALRSRC[2], wa1_2, wa2_2, wa3_2);     or(ALRSRC[3], wa1_3, wa2_3, wa3_3);
+  or(ALRSRC[4], wa1_4, wa2_4, wa3_4);     or(ALRSRC[5], wa1_5, wa2_5, wa3_5);
+  or(ALRSRC[6], wa1_6, wa2_6, wa3_6);     or(ALRSRC[7], wa1_7, wa2_7, wa3_7);
+  or(ALRSRC[8], wa1_8, wa2_8, wa3_8);     or(ALRSRC[9], wa1_9, wa2_9, wa3_9);
+  or(ALRSRC[10], wa1_10, wa2_10, wa3_10); or(ALRSRC[11], wa1_11, wa2_11, wa3_11);
+  or(ALRSRC[12], wa1_12, wa2_12, wa3_12); or(ALRSRC[13], wa1_13, wa2_13, wa3_13);
+  or(ALRSRC[14], wa1_14, wa2_14, wa3_14); or(ALRSRC[15], wa1_15, wa2_15, wa3_15);
+  
+end module;
+  
 module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
   input clock;
