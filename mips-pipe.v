@@ -348,37 +348,33 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
   initial begin 
 // Program: swap memory cells (if needed) and compute absolute value |5-7|=2
-   IMemory[0]  = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = DMemory[0] - x
-   IMemory[1]  = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = DMemory[1] - y
+   IMemory[0]  = 16'b0101000100000001;  // lui $1, 1         -- $1 = DMemory[0] - x
+   IMemory[1]  = 16'b0000000000000000;  // nop
    IMemory[2]  = 16'b0000000000000000;  // nop
-   IMemory[3]  = 16'b0000000000000000;  // nop
-   IMemory[4]  = 16'b0000000000000000;  // nop
-   IMemory[5]  = 16'b0111011011000000;  // slt $3, $1, $2    -- Set $3 on less
+   IMemory[3]  = 16'b0101011000000000;  // lw  $2, 0($1)      -- $2 = DMemory[1] -y
+   IMemory[4]  = 16'b0101011100000001;  // lw  $3, 1($1)
+   IMemory[5]  = 16'b0000000000000000;  // nop
+   IMemory[6]  = 16'b0000000000000000;  // nop
+   IMemory[5]  = 16'b0000111001000000;  // add $3, $1, $2    -- Set $3 on less
    IMemory[6]  = 16'b0000000000000000;  // nop
    IMemory[7]  = 16'b0000000000000000;  // nop
-   IMemory[8]  = 16'b0000000000000000;  // nop
-   IMemory[9]  = 16'b1000110000000100;  // beq $3, $0, 4     -- branch to IMemory[8] if $3 == 0 
-   IMemory[10] = 16'b0000000000000000;  // nop
-   IMemory[11] = 16'b0000000000000000;  // nop
-   IMemory[12] = 16'b0000000000000000;  // nop
-   IMemory[13] = 16'b0110000100000010;  // sw $1, 2($0)      -- DMemory[1] = $1
-   IMemory[14] = 16'b0110001000000000;  // sw $2, 0($0)      -- DMemory[0] = $2
-   IMemory[15] = 16'b0000000000000000;  // nop
-   IMemory[16] = 16'b0000000000000000;  // nop
-   IMemory[17] = 16'b0000000000000000;  // nop
-   IMemory[18] = 16'b0101000100000000;  // lw $1, 0($0)      -- $1 = y
-   IMemory[19] = 16'b0101001000000010;  // lw $2, 2($0)      -- $2 = x
-   IMemory[20] = 16'b0000000000000000;  // nop
-   IMemory[21] = 16'b0000000000000000;  // nop
-   IMemory[22] = 16'b0000000000000000;  // nop
-   IMemory[23] = 16'b0001011001000000;  // sub $1, $1, $2    -- $1 gets ($1 - $2)
 // Data
-   DMemory [0] = 16'h5; // switch the cells and see how the simulation output changes
-   DMemory [1] = 16'h7; // (beq is taken if [0]=32'h7; [1]=32'h5, not taken otherwise)
-   DMemory [1] = 16'h7;
-   DMemory [1] = 16'h7;
-   DMemory [1] = 16'h7;
-   DMemory [1] = 16'h7;
+   DMemory [0] = 16'd1; // switch the cells and see how the simulation output changes
+   DMemory [1] = 16'd2; // (beq is taken if [0]=32'h7; [1]=32'h5, not taken otherwise)
+   DMemory [2] = 16'd3;
+   DMemory [3] = 16'd4;
+   DMemory [4] = 16'd5;
+   DMemory [5] = 16'd6;
+   DMemory [6] = 16'd7;
+   DMemory [7] = 16'd8;
+   DMemory [511] = 16'd9;
+   DMemory [512] = 16'd10;
+   DMemory [513] = 16'd11;
+   DMemory [514] = 16'd12;
+   DMemory [515] = 16'd13;
+   DMemory [516] = 16'd14;
+   DMemory [517] = 16'd15;
+   DMemory [518] = 16'd16;
   end
 
 // Pipeline 
