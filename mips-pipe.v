@@ -348,16 +348,20 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
   initial begin 
 // Program: swap memory cells (if needed) and compute absolute value |5-7|=2
-   IMemory[0]  = 16'b1111000100000001;  // lui $1, 1         -- $1 = DMemory[0] - x
-   IMemory[1]  = 16'b0000000000000000;  // nop
-   IMemory[2]  = 16'b0000000000000000;  // nop
-   IMemory[3]  = 16'b0101011000000000;  // lw  $2, 0($1)      -- $2 = DMemory[1] -y
-   IMemory[4]  = 16'b0101011100000010;  // lw  $3, 2($1)
-   IMemory[5]  = 16'b0000000000000000;  // nop
-   IMemory[6]  = 16'b0000000000000000;  // nop
-   IMemory[5]  = 16'b0000111001000000;  // add $3, $1, $2    -- Set $3 on less
-   IMemory[6]  = 16'b0000000000000000;  // nop
-   IMemory[7]  = 16'b0000000000000000;  // nop
+   IMemory[0]   = 16'b1111000100000001;  // lui $1, 1         -- $1 = DMemory[0] - x
+   IMemory[1]   = 16'b0000000000000000;  // nop
+   IMemory[2]   = 16'b0000000000000000;  // nop
+   IMemory[3]   = 16'b0000000000000000;  // nop
+   IMemory[4]   = 16'b0101011000000000;  // lw  $2, 0($1)      -- $2 = DMemory[1] -y
+   IMemory[5]   = 16'b0101011100000010;  // lw  $3, 2($1)
+   IMemory[6]   = 16'b0000000000000000;  // nop
+   IMemory[7]   = 16'b0000000000000000;  // nop
+   IMemory[8]   = 16'b0000000000000000;  // nop
+   IMemory[9]   = 16'b0000111001000000;  // add $3, $1, $2    -- Set $3 on less
+   IMemory[10]  = 16'b0000000000000000;  // nop
+   IMemory[11]  = 16'b0000000000000000;  // nop
+   IMemory[12]  = 16'b0000000000000000;  // nop
+
 // Data
    DMemory [0] = 16'd1; // switch the cells and see how the simulation output changes
    DMemory [1] = 16'd2; // (beq is taken if [0]=32'h7; [1]=32'h5, not taken otherwise)
@@ -367,8 +371,8 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    DMemory [5] = 16'd6;
    DMemory [6] = 16'd7;
    DMemory [7] = 16'd8;
-   DMemory [127] = 16'd3;
-   DMemory [128] = 16'd4;
+   DMemory [128] = 16'd3;
+   DMemory [129] = 16'd4;
    DMemory [255] = 16'd5;
    DMemory [256] = 16'd6;
    DMemory [511] = 16'd7;
