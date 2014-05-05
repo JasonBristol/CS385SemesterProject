@@ -303,14 +303,14 @@ module ALUSrcControl (ALUSRC, RD2, SignExt, ShiftToUpper, ALUSRCOP);
   
   nor nor1(w1, ALUSRCOP[0], ALUSRCOP[1]);
   
-  and and1_0 (wa1_0,  w1, RD[0]);    and and1_1 (wa1_1,  w1, RD[1]);
-  and and1_2 (wa1_2,  w1, RD[2]);    and and1_3 (wa1_3,  w1, RD[3]); 
-  and and1_4 (wa1_4,  w1, RD[4]);    and and1_5 (wa1_5,  w1, RD[5]);
-  and and1_6 (wa1_6,  w1, RD[6]);    and and1_7 (wa1_7,  w1, RD[7]);  
-  and and1_8 (wa1_8,  w1, RD[8]);    and and1_9 (wa1_9,  w1, RD[9]);
-  and and1_10(wa1_10, w1, RD[10]);   and and1_11(wa1_11, w1, RD[11]);
-  and and1_12(wa1_12, w1, RD[12]);   and and1_13(wa1_13, w1, RD[13]);
-  and and1_14(wa1_14, w1, RD[14]);   and and1_15(wa1_15, w1, RD[15]);
+  and and1_0 (wa1_0,  w1, RD2[0]);    and and1_1 (wa1_1,  w1, RD2[1]);
+  and and1_2 (wa1_2,  w1, RD2[2]);    and and1_3 (wa1_3,  w1, RD2[3]); 
+  and and1_4 (wa1_4,  w1, RD2[4]);    and and1_5 (wa1_5,  w1, RD2[5]);
+  and and1_6 (wa1_6,  w1, RD2[6]);    and and1_7 (wa1_7,  w1, RD2[7]);  
+  and and1_8 (wa1_8,  w1, RD2[8]);    and and1_9 (wa1_9,  w1, RD2[9]);
+  and and1_10(wa1_10, w1, RD2[10]);   and and1_11(wa1_11, w1, RD2[11]);
+  and and1_12(wa1_12, w1, RD2[12]);   and and1_13(wa1_13, w1, RD2[13]);
+  and and1_14(wa1_14, w1, RD2[14]);   and and1_15(wa1_15, w1, RD2[15]);
 
   and and2_0 (wa2_0,  ALUSRCOP[0], SignExt[0]);  and and2_1 (wa2_1,  ALUSRCOP[0], SignExt[1]);
   and and2_2 (wa2_2,  ALUSRCOP[0], SignExt[2]);  and and2_3 (wa2_3,  ALUSRCOP[0], SignExt[3]);
@@ -387,7 +387,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
 // ID
    wire [10:0] Control;
-   reg IDEX_RegWrite,IDEX_MemtoReg,IDEX_MemWrite, IDEX_RegDst;
+   reg IDEX_RegWrite,IDEX_MemtoReg,IDEX_MemWrite,IDEX_RegDst;
    reg [1:0] IDEX_Branch, IDEX_ALUSrc;
    reg [2:0]  IDEX_ALUOp;
    wire [15:0] RD1,RD2,SignExtend, WD;
@@ -416,7 +416,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    // assign WR = (IDEX_RegDst) ? IDEX_rd: IDEX_rt;              // RegDst Mux
 
    mux2x1_2 RegDstMux (IDEX_rt, IDEX_rd, IDEX_RegDst, WR);         // RegDst Mux
-   //mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);          // ALUSrc Mux
+   // mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);          // ALUSrc Mux
    ALUSrcControl ALUSrcControl1(B, IDEX_RD2, IDEX_SignExt, IDEX_SignExt<<8, IDEX_ALUSrc);
 
 // MEM
