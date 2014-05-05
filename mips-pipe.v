@@ -348,7 +348,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
   initial begin 
 // Program: swap memory cells (if needed) and compute absolute value |5-7|=2
-   IMemory[0]  = 16'b0101000100000001;  // lui $1, 1         -- $1 = DMemory[0] - x
+   IMemory[0]  = 16'b1111000100000001;  // lui $1, 1         -- $1 = DMemory[0] - x
    IMemory[1]  = 16'b0000000000000000;  // nop
    IMemory[2]  = 16'b0000000000000000;  // nop
    IMemory[3]  = 16'b0101011000000000;  // lw  $2, 0($1)      -- $2 = DMemory[1] -y
@@ -503,7 +503,7 @@ module test ();
   
   initial begin
     $display ("time PC  IFID_IR  IDEX_IR  EXMEM_IR MEMWB_IR WD");
-    $monitor ("%2d  %3d  %h %h %h %h %h", $time,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
+    $monitor ("%2d  %3d  %h %h %h %h %d", $time,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
     clock = 1;
     #56 $finish;
   end
