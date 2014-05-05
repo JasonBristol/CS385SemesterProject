@@ -260,18 +260,18 @@ module MainControl (Op,Control);
   output reg [10:0] Control;
 
   always @(Op) case (Op)
-  //IDEX_RegDst,IDEX_ALUSrc[1:0],IDEX_MemtoReg,IDEX_RegWrite,IDEX_MemWrite,IDEX_Branch[1:0],IDEX_ALUOp[2:0] 
-    4'b0000: Control <= 10'b10001000010; // ADD
-    4'b0001: Control <= 10'b10001000110; // SUB
-    4'b0010: Control <= 10'b10001000000; // AND
-    4'b0011: Control <= 10'b10001000001; // OR
-    4'b0111: Control <= 10'b10001000111; // SLT
-    4'b0101: Control <= 10'b00111000010; // LW
-    4'b0110: Control <= 10'b00100100010; // SW
-    4'b1000: Control <= 10'b00000001110; // BEQ
-    4'b1001: Control <= 10'b00000010110; // BNE
-    4'b0100: Control <= 10'b00101000010; // ADDI  
-    4'b1111: Control <= 10'b01001000001; // LUI  
+    //IDEX_RegDst,IDEX_ALUSrc[1:0],IDEX_MemtoReg,IDEX_RegWrite,IDEX_MemWrite,IDEX_Branch[1:0],IDEX_ALUOp[2:0] 
+    4'b0000: Control <= 11'b10001000010; // ADD
+    4'b0001: Control <= 11'b10001000110; // SUB
+    4'b0010: Control <= 11'b10001000000; // AND
+    4'b0011: Control <= 11'b10001000001; // OR
+    4'b0111: Control <= 11'b10001000111; // SLT
+    4'b0101: Control <= 11'b00111000010; // LW
+    4'b0110: Control <= 11'b00100100010; // SW
+    4'b1000: Control <= 11'b00000001110; // BEQ
+    4'b1001: Control <= 11'b00000010110; // BNE
+    4'b0100: Control <= 11'b00101000010; // ADDI  
+    4'b1111: Control <= 11'b01001000001; // LUI  
     
   endcase
 
@@ -330,16 +330,16 @@ module ALUSrcControl (ALUSRC, RD2, SignExt, ShiftToUpper, ALUSRCOP);
   and and3_12(wa3_12, ALUSRCOP[1], ShiftToUpper[12]); and and3_13(wa3_13, ALUSRCOP[1], ShiftToUpper[13]);
   and and3_14(wa3_14, ALUSRCOP[1], ShiftToUpper[14]); and and3_15(wa3_15, ALUSRCOP[1], ShiftToUpper[15]);
   
-  or(ALRSRC[0],  wa1_0,  wa2_0,  wa3_0);  or(ALRSRC[1],  wa1_1,  wa2_1,  wa3_1);
-  or(ALRSRC[2],  wa1_2,  wa2_2,  wa3_2);  or(ALRSRC[3],  wa1_3,  wa2_3,  wa3_3);
-  or(ALRSRC[4],  wa1_4,  wa2_4,  wa3_4);  or(ALRSRC[5],  wa1_5,  wa2_5,  wa3_5);
-  or(ALRSRC[6],  wa1_6,  wa2_6,  wa3_6);  or(ALRSRC[7],  wa1_7,  wa2_7,  wa3_7);
-  or(ALRSRC[8],  wa1_8,  wa2_8,  wa3_8);  or(ALRSRC[9],  wa1_9,  wa2_9,  wa3_9);
-  or(ALRSRC[10], wa1_10, wa2_10, wa3_10); or(ALRSRC[11], wa1_11, wa2_11, wa3_11);
-  or(ALRSRC[12], wa1_12, wa2_12, wa3_12); or(ALRSRC[13], wa1_13, wa2_13, wa3_13);
-  or(ALRSRC[14], wa1_14, wa2_14, wa3_14); or(ALRSRC[15], wa1_15, wa2_15, wa3_15);
+  or(ALUSRC[0],  wa1_0,  wa2_0,  wa3_0);  or(ALUSRC[1],  wa1_1,  wa2_1,  wa3_1);
+  or(ALUSRC[2],  wa1_2,  wa2_2,  wa3_2);  or(ALUSRC[3],  wa1_3,  wa2_3,  wa3_3);
+  or(ALUSRC[4],  wa1_4,  wa2_4,  wa3_4);  or(ALUSRC[5],  wa1_5,  wa2_5,  wa3_5);
+  or(ALUSRC[6],  wa1_6,  wa2_6,  wa3_6);  or(ALUSRC[7],  wa1_7,  wa2_7,  wa3_7);
+  or(ALUSRC[8],  wa1_8,  wa2_8,  wa3_8);  or(ALUSRC[9],  wa1_9,  wa2_9,  wa3_9);
+  or(ALUSRC[10], wa1_10, wa2_10, wa3_10); or(ALUSRC[11], wa1_11, wa2_11, wa3_11);
+  or(ALUSRC[12], wa1_12, wa2_12, wa3_12); or(ALUSRC[13], wa1_13, wa2_13, wa3_13);
+  or(ALUSRC[14], wa1_14, wa2_14, wa3_14); or(ALUSRC[15], wa1_15, wa2_15, wa3_15);
   
-end module;
+endmodule
   
 module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
@@ -386,7 +386,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    assign NextPC = (EXMEM_Branch && EXMEM_Zero) ? EXMEM_Target: PCplus2; // Needs to be gate-level
 
 // ID
-   wire [9:0] Control;
+   wire [10:0] Control;
    reg IDEX_RegWrite,IDEX_MemtoReg,IDEX_MemWrite, IDEX_RegDst;
    reg [1:0] IDEX_Branch, IDEX_ALUSrc;
    reg [2:0]  IDEX_ALUOp;
@@ -417,7 +417,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
    mux2x1_2 RegDstMux (IDEX_rt, IDEX_rd, IDEX_RegDst, WR);         // RegDst Mux
    //mux2x1_16 ALUSrcMux (IDEX_RD2, IDEX_SignExt, IDEX_ALUSrc, B);          // ALUSrc Mux
-   ALUSrcControl1 ALUSrcControl(B, IDEX_RD2, IDEX_SignExt, IDEX_SignExt<<8, IDEX_ALUSrc);
+   ALUSrcControl ALUSrcControl1(B, IDEX_RD2, IDEX_SignExt, IDEX_SignExt<<8, IDEX_ALUSrc);
 
 // MEM
    reg MEMWB_RegWrite,MEMWB_MemtoReg;
