@@ -352,7 +352,7 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    IMemory[1]  = 16'b0000000000000000;  // nop
    IMemory[2]  = 16'b0000000000000000;  // nop
    IMemory[3]  = 16'b0101011000000000;  // lw  $2, 0($1)      -- $2 = DMemory[1] -y
-   IMemory[4]  = 16'b0101011100000001;  // lw  $3, 1($1)
+   IMemory[4]  = 16'b0101011100000010;  // lw  $3, 2($1)
    IMemory[5]  = 16'b0000000000000000;  // nop
    IMemory[6]  = 16'b0000000000000000;  // nop
    IMemory[5]  = 16'b0000111001000000;  // add $3, $1, $2    -- Set $3 on less
