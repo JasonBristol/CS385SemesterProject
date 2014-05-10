@@ -348,19 +348,71 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
 
   initial begin 
 // Program: swap memory cells (if needed) and compute absolute value |5-7|=2
-   IMemory[0]   = 16'b1111000100000001;  // lui $1, 1         -- $1 = DMemory[0] - x
-   IMemory[1]   = 16'b0000000000000000;  // nop
-   IMemory[2]   = 16'b0000000000000000;  // nop
-   IMemory[3]   = 16'b0000000000000000;  // nop
-   IMemory[4]   = 16'b0101011000000000;  // lw  $2, 0($1)      -- $2 = DMemory[1] -y
-   IMemory[5]   = 16'b0101011100000010;  // lw  $3, 2($1)
-   IMemory[6]   = 16'b0000000000000000;  // nop
-   IMemory[7]   = 16'b0000000000000000;  // nop
-   IMemory[8]   = 16'b0000000000000000;  // nop
-   IMemory[9]   = 16'b0000111001000000;  // add $3, $1, $2    -- Set $3 on less
-   IMemory[10]  = 16'b0000000000000000;  // nop
-   IMemory[11]  = 16'b0000000000000000;  // nop
-   IMemory[12]  = 16'b0000000000000000;  // nop
+//	Register Usage:
+//	$1 Base/Loop Counter
+//  $2 Temp
+//  $3 Stack Pointer
+   IMemory[0]    = 16'b1111001100000001;  // lui	$3, 1		load $3 with the base of the stack
+   IMemory[1]	   = 16'b0000000000000000;  // nop   
+   IMemory[2]	   = 16'b0000000000000000;  // nop 
+   IMemory[3]	   = 16'b0000000000000000;  // nop   
+   IMemory[4]    = 16'b0000000001000000;  // add	$1, $0, $0	intialize $1 to 0
+   IMemory[5]	   = 16'b0000000000000000;  // nop
+   IMemory[6]	   = 16'b0000000000000000;  // nop
+   IMemory[7]	   = 16'b0000000000000000;  // nop
+   IMemory[8]    = 16'b0101011000000000;  // lw		$2, 0($1)   load first variable into temp
+   IMemory[9]	   = 16'b0000000000000000;  // nop
+   IMemory[10]	 = 16'b0000000000000000;  // nop
+   IMemory[11]	 = 16'b0000000000000000;  // nop
+   IMemory[12]   = 16'b0100111100000010;  // addi	$3, $3, 2	increment stack pointer
+   IMemory[13]	 = 16'b0000000000000000;  // nop
+   IMemory[14]	 = 16'b0000000000000000;  // nop
+   IMemory[15]	 = 16'b0000000000000000;  // nop
+   IMemory[16]   = 16'b0110111000000000;  // sw     $3, $2		push temp onto the stack
+   IMemory[17]	 = 16'b0000000000000000;  // nop
+   IMemory[18]	 = 16'b0000000000000000;  // nop
+   IMemory[19]	 = 16'b0000000000000000;  // nop
+   IMemory[20]   = 16'b0100010100000010;  // addi	$1, $1, 2	increment loop counter by 2
+   IMemory[21]	 = 16'b0000000000000000;  // nop
+   IMemory[22]	 = 16'b0000000000000000;  // nop
+   IMemory[23]	 = 16'b0000000000000000;  // nop
+   IMemory[24]   = 16'b0100001000001010;  // addi   $2, $0, 10	set temp to ten
+   IMemory[25]	 = 16'b0000000000000000;  // nop
+   IMemory[26]	 = 16'b0000000000000000;  // nop
+   IMemory[27]	 = 16'b0000000000000000;  // nop
+   IMemory[28]   = 16'b1001011011101011;  // bne	$1, $2, -20  loop back 20 if counter != 10
+   IMemory[29]	 = 16'b0000000000000000;  // nop
+   IMemory[30]	 = 16'b0000000000000000;  // nop
+   IMemory[31]	 = 16'b0000000000000000;  // nop
+   IMemory[32]   = 16'b0000000001000000;  // add	$1, $0, $0	reset loop counter/ base
+   IMemory[33]	 = 16'b0000000000000000;  // nop
+   IMemory[34]	 = 16'b0000000000000000;  // nop
+   IMemory[35]	 = 16'b0000000000000000;  // nop
+   IMemory[36]   = 16'b0101111000000000;  // lw		$2, 0($3)	pop from stack
+   IMemory[37]	 = 16'b0000000000000000;  // nop
+   IMemory[38]	 = 16'b0000000000000000;  // nop
+   IMemory[39]	 = 16'b0000000000000000;  // nop
+   IMemory[40]   = 16'b0110011000000000;  // sw		$2, 0($1)	store into data section
+   IMemory[41]	 = 16'b0000000000000000;  // nop
+   IMemory[42]	 = 16'b0000000000000000;  // nop
+   IMemory[43]	 = 16'b0000000000000000;  // nop
+   IMemory[44]   = 16'b0100010100000010;  // addi	$1, $1, 2	increment loop/base
+   IMemory[45]	 = 16'b0000000000000000;  // nop
+   IMemory[46]	 = 16'b0000000000000000;  // nop
+   IMemory[47]	 = 16'b0000000000000000;  // nop
+   IMemory[48]   = 16'b0100111111111110;  // addi 	$3, $3, -2  decrement stack pointer
+   IMemory[49]	 = 16'b0000000000000000;  // nop
+   IMemory[50]	 = 16'b0000000000000000;  // nop
+   IMemory[51]	 = 16'b0000000000000000;  // nop
+   IMemory[52]   = 16'b0100001000001010;  // addi 	$2, $0, 10	Set temp to ten
+   IMemory[53]	 = 16'b0000000000000000;  // nop
+   IMemory[54]	 = 16'b0000000000000000;  // nop
+   IMemory[55]	 = 16'b0000000000000000;  // nop
+   IMemory[56]   = 16'b1001011011101011;  // bne	$1, $2, -6	loop back 6 if counter != 10
+   IMemory[57]	 = 16'b0000000000000000;  // nop
+   IMemory[58]	 = 16'b0000000000000000;  // nop
+   IMemory[59]	 = 16'b0000000000000000;  // nop
+   
 
 // Data
    DMemory [0] = 16'd1; // switch the cells and see how the simulation output changes
@@ -368,21 +420,13 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    DMemory [2] = 16'd3;
    DMemory [3] = 16'd4;
    DMemory [4] = 16'd5;
-   DMemory [5] = 16'd6;
-   DMemory [6] = 16'd7;
-   DMemory [7] = 16'd8;
-   DMemory [128] = 16'd3;
-   DMemory [129] = 16'd4;
-   DMemory [255] = 16'd5;
-   DMemory [256] = 16'd6;
-   DMemory [511] = 16'd7;
-   DMemory [512] = 16'd8;
-   DMemory [513] = 16'd11;
-   DMemory [514] = 16'd12;
-   DMemory [515] = 16'd13;
-   DMemory [516] = 16'd14;
-   DMemory [517] = 16'd15;
-   DMemory [518] = 16'd16;
+   DMemory [128] = 16'd0;
+   DMemory [129] = 16'd0;
+   DMemory [130] = 16'd0;
+   DMemory [131] = 16'd0;
+   DMemory [132] = 16'd0;
+   DMemory [133] = 16'd0;
+   
   end
 
 // Pipeline 
@@ -391,7 +435,9 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    wire [15:0] PCplus2, NextPC;
    reg[15:0] PC, IMemory[0:1023], IFID_IR, IFID_PCplus2;
    ALU fetch (3'b010,PC,2,PCplus2,Unused1);
-   assign NextPC = (EXMEM_Branch && EXMEM_Zero) ? EXMEM_Target: PCplus2; // Needs to be gate-level
+   //assign NextPC = (EXMEM_Branch && EXMEM_Zero) ? EXMEM_Target: PCplus2; // Needs to be gate-level
+   BranchControl BranchCon (EXMEM_Branch, EXMEM_Zero, BranchConOut);
+   mux2x1_16 BranchMux (PCplus2, EXMEM_Target, BranchConOut, NextPC);
 
 // ID
    wire [10:0] Control;
@@ -407,8 +453,8 @@ module CPU (clock,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
    assign SignExtend = {{8{IFID_IR[7]}},IFID_IR[7:0]}; 
   
 // EXE
-   reg EXMEM_RegWrite,EXMEM_MemtoReg,
-       EXMEM_Branch,  EXMEM_MemWrite;
+   reg EXMEM_RegWrite,EXMEM_MemtoReg,EXMEM_MemWrite;
+   reg [1:0] EXMEM_Branch;
    wire [15:0] Target;
    reg EXMEM_Zero;
    reg [15:0] EXMEM_Target,EXMEM_ALUOut,EXMEM_RD2;
@@ -513,7 +559,7 @@ module test ();
     $display ("time PC  IFID_IR  IDEX_IR  EXMEM_IR MEMWB_IR WD");
     $monitor ("%2d  %3d  %h %h %h %h %d", $time,PC,IFID_IR,IDEX_IR,EXMEM_IR,MEMWB_IR,WD);
     clock = 1;
-    #56 $finish;
+    #520 $finish;
   end
 
 endmodule
